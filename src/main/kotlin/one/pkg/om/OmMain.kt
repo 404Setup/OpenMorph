@@ -8,6 +8,7 @@
 
 package one.pkg.om
 
+import OMetrics
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import one.pkg.om.commands.OmCommand
 import one.pkg.om.entities.MorphEntity
@@ -22,10 +23,13 @@ import org.bukkit.entity.Mob
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
+
 class OmMain : JavaPlugin() {
     init {
         instance = this
     }
+
+    private var metrics: OMetrics? = null
 
     val playerSaveDir = (dataFolder / "saves").apply {
         mkdirs()
@@ -42,6 +46,8 @@ class OmMain : JavaPlugin() {
 
     override fun onEnable() {
         println("Plugin has been enabled")
+
+        metrics = OMetrics(this, 29038)
 
         ClassScanner.scanClasses("one.pkg.om.listener")
             .filter { Listener::class.java.isAssignableFrom(it) }
@@ -95,6 +101,10 @@ class OmMain : JavaPlugin() {
 
     override fun onDisable() {
         logger.info("Plugin has been disabled")
+
+        metrics?.shutdown()
+        metrics = null
+
         OManager.playerMorph.values.forEach {
             try {
                 it.current?.stop(stopServer = true)
