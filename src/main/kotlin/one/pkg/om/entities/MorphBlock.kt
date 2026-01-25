@@ -197,7 +197,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
             player.runAs { _ ->
                 player.gameMode = GameMode.SPECTATOR
                 solidifiedLocation = legs.location
-                legs.type = material
+                legs.setType(material, false)
                 isSolidified = true
                 removeDisplay()
                 OManager.playerMorph[player]?.offlineData?.setSolidifiedBlock(
