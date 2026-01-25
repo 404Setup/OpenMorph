@@ -8,5 +8,14 @@
 
 package one.pkg.om.dialog
 
-class UnMorphDialog {
+import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+
+@Suppress("UnstableApiUsage")
+class UnMorphDialog : IDialog {
+    override fun create(builder: DialogRegistryEntry.Builder) {
+        TODO("Not yet implemented")
+    }
+
+    override val key = "unmorph"
+
 }

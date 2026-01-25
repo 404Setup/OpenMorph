@@ -10,11 +10,12 @@ package one.pkg.om.dialog
 
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
 
-class MorphDialog : IDialog {
+@Suppress("UnstableApiUsage")
+class TextDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
         TODO("Not yet implemented")
     }
 
-    override val key = "morph"
+    override val key = "text"
 
 }

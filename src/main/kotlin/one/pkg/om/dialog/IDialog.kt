@@ -15,7 +15,7 @@ import io.papermc.paper.registry.keys.DialogKeys
 import net.kyori.adventure.key.Key
 
 @Suppress("UnstableApiUsage")
-interface IDialogBase {
+interface IDialog {
     val key: String
 
     fun create(builder: DialogRegistryEntry.Builder)

@@ -11,7 +11,7 @@ package one.pkg.om.dialog
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
 
 @Suppress("UnstableApiUsage")
-class MainDialog : IDialogBase {
+class MainDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
         TODO("Not yet implemented")
     }
