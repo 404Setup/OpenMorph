@@ -1,6 +1,6 @@
 # OpenMorph
 
-[![](screen.png)]
+![](screen.png)
 
 An open-source, universal camouflage plugin.
 
@@ -71,6 +71,15 @@ does not have this feature, but it may be added in the future.
 - Will OpenMorph be compatible with i18n?
 
 There isn't one at the moment, this is a TODO item.
+
+- When I'm disguised as another player, I can't see my own skin.
+
+OpenMorph's current implementation of player morphing is quite bizarre.
+
+You might encounter these issues: only you can't see your own skin; your messages display incorrect signatures, but
+other players can see them; etc.
+
+I will optimize these issues in the future.
 
 ## LICENSE
 
