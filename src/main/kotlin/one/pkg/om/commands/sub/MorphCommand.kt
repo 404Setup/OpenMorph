@@ -18,9 +18,11 @@ import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import one.pkg.om.commands.SubCommand
+import one.pkg.om.data.MorphIgnored
 import one.pkg.om.entities.MorphBlock
 import one.pkg.om.entities.MorphFactory
 import one.pkg.om.entities.MorphPlayer
+import one.pkg.om.manager.BanManager
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.op
 import one.pkg.om.utils.sendFailed
@@ -82,7 +84,7 @@ class MorphCommand : SubCommand {
         val data = OManager.playerMorph[targetPlayer] ?: return 0
 
         if (!isOp) {
-            if (one.pkg.om.manager.BanManager.isLocked(type, targetVal)) {
+            if (BanManager.isLocked(type, targetVal)) {
                 sender.sendFailed("This morph is locked.")
                 return 0
             }
@@ -108,8 +110,12 @@ class MorphCommand : SubCommand {
 
         when {
             type.startsWith("entity") -> {
-                val et = runCatching { EntityType.valueOf(targetVal.uppercase()) }.getOrNull()
+                val et = runCatching { EntityType.fromName(targetVal) }.getOrNull()
                 if (et != null) {
+                    if (MorphIgnored.ignored.contains(et)) {
+                        sender.sendWarning("Cannot morph into ignored entity type: $et")
+                        return 0
+                    }
                     if (targetPlayer.world.difficulty == Difficulty.PEACEFUL) {
                         val clazz = et.entityClass
                         if (clazz != null && Enemy::class.java.isAssignableFrom(clazz)) {
@@ -129,7 +135,7 @@ class MorphCommand : SubCommand {
             }
 
             type.startsWith("block") -> {
-                val mat = runCatching { Material.valueOf(targetVal.uppercase()) }.getOrNull()
+                val mat = runCatching { Material.getMaterial(targetVal.uppercase()) }.getOrNull()
                 if (mat != null && mat.isBlock) {
                     val morph = MorphBlock(targetPlayer, mat)
                     data.current = morph

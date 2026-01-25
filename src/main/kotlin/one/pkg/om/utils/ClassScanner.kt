@@ -18,7 +18,7 @@ object ClassScanner {
         val plugin = OmMain.getInstance()
         val classes = mutableListOf<Class<*>>()
         val src = plugin.javaClass.protectionDomain.codeSource ?: return emptyList()
-        
+
         val srcLoc = src.location
         val path = URLDecoder.decode(srcLoc.path, "UTF-8")
         val file = File(path)
@@ -74,7 +74,7 @@ object ClassScanner {
             .removePrefix(File.separator)
             .replace(File.separator, ".")
             .removeSuffix(".class")
-    
+
         return relativePath
     }
 }

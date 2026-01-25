@@ -132,7 +132,7 @@ data class SaveMorphData(
 
     fun removeBlock(material: String): Boolean {
         val mat = material.uppercase()
-        if (mat == "all") {
+        if (mat == "ALL") {
             if (blocks.isNotEmpty()) {
                 blocks.clear()
                 markDirty()
@@ -146,12 +146,12 @@ data class SaveMorphData(
     }
 
     fun hasEntity(type: String): Boolean {
-        if (entities.contains("all")) return true
+        if (entities.contains("ALL")) return true
         return entities.contains(type.uppercase())
     }
 
     fun addEntity(type: String) {
-        val et = type.uppercase()
+        val et = type.lowercase()
         if (et == "all") {
             entities.clear()
             entities.add("all")

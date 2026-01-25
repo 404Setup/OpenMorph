@@ -8,8 +8,12 @@
 
 package one.pkg.om.utils
 
+import io.papermc.paper.registry.RegistryAccess
+import io.papermc.paper.registry.RegistryKey
 import one.pkg.om.manager.OManager
+import org.bukkit.Keyed
 import org.bukkit.Location
+import org.bukkit.Registry
 import org.bukkit.World
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
@@ -45,4 +49,8 @@ fun World.isIt(other: World): Boolean {
 
 fun World.isIt(other: Location): Boolean {
     return isIt(other.world)
+}
+
+fun <T : Keyed> getRegistry(registryKey: RegistryKey<T>): Registry<T> {
+    return RegistryAccess.registryAccess().getRegistry(registryKey)
 }

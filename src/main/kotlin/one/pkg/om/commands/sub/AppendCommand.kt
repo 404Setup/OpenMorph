@@ -18,13 +18,17 @@ import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import one.pkg.om.commands.SubCommand
-import one.pkg.om.manager.OManager
+import one.pkg.om.data.MorphIgnored
 import one.pkg.om.data.SavePlayerData
+import one.pkg.om.manager.OManager
 import one.pkg.om.utils.op
 import one.pkg.om.utils.sendFailed
 import one.pkg.om.utils.sendSuccess
+import one.pkg.om.utils.sendWarning
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
 import java.util.concurrent.CompletableFuture
 
 class AppendCommand : SubCommand {
@@ -66,12 +70,21 @@ class AppendCommand : SubCommand {
         val data = OManager.playerMorph[targetPlayer] ?: return 0
 
         val type = StringArgumentType.getString(ctx, "type").lowercase()
-        val id = StringArgumentType.getString(ctx, "id")
+        val id = StringArgumentType.getString(ctx, "id").uppercase()
 
         when (type) {
             "entity" -> {
                 if (data.offlineData.hasEntity(id)) {
                     sender.sendFailed("$targetName already has entity $id")
+                    return 0
+                }
+                val entityType = EntityType.fromName(id)
+                if (entityType == null) {
+                    sender.sendFailed("$id is not a valid entity.")
+                    return 0
+                }
+                if (MorphIgnored.ignored.contains(entityType)) {
+                    sender.sendFailed("$id is ignored by the plugin.")
                     return 0
                 }
                 data.offlineData.addEntity(id)
@@ -83,7 +96,22 @@ class AppendCommand : SubCommand {
                     sender.sendFailed("$targetName already has block $id")
                     return 0
                 }
-                data.offlineData.addBlock(id)
+                val block: Material?
+                if (sender is Player && id == "hand") {
+                    val item = sender.inventory.itemInMainHand
+                    if (!item.type.isBlock || item.type == Material.AIR) {
+                        sender.sendWarning("You must hold a block in your main hand.")
+                        return 0
+                    }
+                    block = item.type
+                } else {
+                    block = Material.getMaterial(id)
+                    if (block == null) {
+                        sender.sendFailed("$id is not a valid block.")
+                        return 0
+                    }
+                }
+                data.offlineData.addBlock(block.name)
                 sender.sendSuccess("Added block $id to $targetName")
             }
 
@@ -154,40 +182,11 @@ class AppendCommand : SubCommand {
             return builder.buildFuture()
         }
         if (type == "entity") {
-            val allEntities = EntityType.entries.map { it.name } + "all"
+            val allEntities = EntityType.entries.filter { !MorphIgnored.ignored.contains(it) }.map { it.name } + "all"
             allEntities.filter { name ->
                 val isOwned = data.hasEntity(name)
                 !isOwned && name.startsWith(input, true)
             }.forEach { builder.suggest(it) }
-            return builder.buildFuture()
-        }
-        if (type == "block") {
-            val allBlocks = LockCommand.ALL_BLOCKS
-
-            if (input.startsWith("block")) {
-                val pageStr = input.drop(5)
-                val page = pageStr.toIntOrNull()
-                if (page != null) {
-                    val start = (page - 1) * 20
-                    if (start < allBlocks.size) {
-                        val end = (start + 20).coerceAtMost(allBlocks.size)
-                        allBlocks.subList(start, end).filter { name ->
-                            !data.hasBlock(name)
-                        }.forEach { builder.suggest(it) }
-                        return builder.buildFuture()
-                    }
-                }
-            }
-
-            val pages = (1..(allBlocks.size / 20 + 1)).map { "block$it" }
-            pages.filter { it.startsWith(input, true) }.forEach { builder.suggest(it) }
-
-            if (input.isNotEmpty() && !input.startsWith("block")) {
-                allBlocks.filter { name ->
-                    !data.hasBlock(name) && name.startsWith(input, true)
-                }.take(50).forEach { builder.suggest(it) }
-            }
-
             return builder.buildFuture()
         }
         return builder.buildFuture()

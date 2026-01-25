@@ -28,11 +28,6 @@ import org.bukkit.entity.Player
 import java.util.concurrent.CompletableFuture
 
 class LockCommand : SubCommand {
-    companion object {
-        val ALL_BLOCKS by lazy {
-            Material.entries.filter { it.isBlock }.map { it.name }
-        }
-    }
 
     override fun register(root: LiteralArgumentBuilder<CommandSourceStack>) {
         root.then(
@@ -101,7 +96,6 @@ class LockCommand : SubCommand {
 
         val available = when {
             type.startsWith("entity") -> EntityType.entries.map { it.name }
-            type.startsWith("block") -> ALL_BLOCKS
             type.startsWith("player") -> Bukkit.getOnlinePlayers().map { it.name }
             else -> emptyList()
         }

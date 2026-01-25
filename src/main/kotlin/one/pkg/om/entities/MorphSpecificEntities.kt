@@ -8,6 +8,8 @@
 
 package one.pkg.om.entities
 
+import io.papermc.paper.registry.RegistryKey
+import one.pkg.om.utils.getRegistry
 import one.pkg.om.utils.localRandom
 import org.bukkit.DyeColor
 import org.bukkit.GameMode
@@ -39,33 +41,7 @@ class MorphIronGolem(player: Player) : MorphEntity(player, EntityType.IRON_GOLEM
     }
 }
 
-class MorphVillager(player: Player) : MorphEntity(player, EntityType.VILLAGER) {
-    override fun onEntitySpawned(entity: Entity) {
-        val villager = entity as? Villager ?: return
-        villager.villagerType = Registry.VILLAGER_TYPE.toList().localRandom()
-        if (ThreadLocalRandom.current().nextInt(1, 10) > 7)
-            villager.setBaby()
-        villager.profession = Registry.VILLAGER_PROFESSION.toList().localRandom()
-    }
-
-    override fun canUpdateInventory(): Boolean = true
-}
-
-class MorphPig(player: Player) : MorphEntity(player, EntityType.PIG) {
-    override fun onEntitySpawned(entity: Entity) {
-        val pig = entity as? Pig ?: return
-        pig.setSaddle(ThreadLocalRandom.current().nextBoolean())
-    }
-}
-
-class MorphSheep(player: Player) : MorphEntity(player, EntityType.SHEEP) {
-    override fun onEntitySpawned(entity: Entity) {
-        val sheep = entity as? Sheep ?: return
-        sheep.color = DyeColor.entries.toTypedArray().localRandom()
-    }
-}
-
-class MorphAllay(player: Player) : MorphEntity(player, EntityType.ALLAY) {
+open class MorphFlyEntity(player: Player, entityType: EntityType) : MorphEntity(player, entityType) {
     override fun start() {
         super.start()
         player.allowFlight = true
@@ -80,7 +56,144 @@ class MorphAllay(player: Player) : MorphEntity(player, EntityType.ALLAY) {
     }
 }
 
-class MorphBat(player: Player) : MorphEntity(player, EntityType.BAT) {
+class MorphFrog(player: Player) : MorphEntity(player, EntityType.FROG) {
+    override fun onEntitySpawned(entity: Entity) {
+        val frog = entity as? Frog ?: return
+
+        frog.variant = getRegistry(RegistryKey.FROG_VARIANT).localRandom()
+    }
+}
+
+class MorphVillager(player: Player) : MorphEntity(player, EntityType.VILLAGER) {
+    override fun onEntitySpawned(entity: Entity) {
+        val villager = entity as? Villager ?: return
+        villager.villagerType = Registry.VILLAGER_TYPE.localRandom()
+        if (ThreadLocalRandom.current().nextInt(1, 10) > 7)
+            villager.setBaby()
+        villager.profession = Registry.VILLAGER_PROFESSION.localRandom()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphZombie(player: Player) : MorphEntity(player, EntityType.ZOMBIE) {
+    override fun onEntitySpawned(entity: Entity) {
+        val zombie = entity as? Zombie ?: return
+
+        if (ThreadLocalRandom.current().nextBoolean())
+            zombie.setAdult()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphPiglin(player: Player) : MorphEntity(player, EntityType.PIGLIN) {
+    override fun onEntitySpawned(entity: Entity) {
+        val piglin = entity as? Piglin ?: return
+
+        if (ThreadLocalRandom.current().nextBoolean())
+            piglin.setAdult()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphPiglinBrute(player: Player) : MorphEntity(player, EntityType.PIGLIN_BRUTE) {
+    override fun onEntitySpawned(entity: Entity) {
+        val piglinBrute = entity as? PiglinBrute ?: return
+
+        if (ThreadLocalRandom.current().nextBoolean())
+            piglinBrute.setAdult()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphChicken(player: Player) : MorphEntity(player, EntityType.CHICKEN) {
+    override fun onEntitySpawned(entity: Entity) {
+        val chicken = entity as? Chicken ?: return
+        if (ThreadLocalRandom.current().nextBoolean())
+            chicken.setAdult()
+        chicken.variant = getRegistry(RegistryKey.CHICKEN_VARIANT).localRandom()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphCow(player: Player) : MorphEntity(player, EntityType.COW) {
+    override fun onEntitySpawned(entity: Entity) {
+        val cow = entity as? Cow ?: return
+        if (ThreadLocalRandom.current().nextBoolean())
+            cow.setAdult()
+        cow.variant = getRegistry(RegistryKey.COW_VARIANT).localRandom()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphZombieVillager(player: Player) : MorphEntity(player, EntityType.ZOMBIE_VILLAGER) {
+    override fun onEntitySpawned(entity: Entity) {
+        val zombieVillager = entity as? ZombieVillager ?: return
+        zombieVillager.villagerType = Registry.VILLAGER_TYPE.localRandom()
+        if (ThreadLocalRandom.current().nextInt(1, 10) > 7)
+            zombieVillager.setAdult()
+        zombieVillager.villagerProfession = Registry.VILLAGER_PROFESSION.localRandom()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphZombifiedPiglin(player: Player) : MorphEntity(player, EntityType.ZOMBIFIED_PIGLIN) {
+    override fun onEntitySpawned(entity: Entity) {
+        val e = entity as? PigZombie ?: return
+        if (ThreadLocalRandom.current().nextBoolean()) e.setAdult()
+    }
+
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphSkeleton(player: Player) : MorphEntity(player, EntityType.SKELETON) {
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphBoggedSkeleton(player: Player) : MorphEntity(player, EntityType.BOGGED) {
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphParchedSkeleton(player: Player) : MorphEntity(player, EntityType.PARCHED) {
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphStraySkeleton(player: Player) : MorphEntity(player, EntityType.STRAY) {
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphWitherSkeleton(player: Player) : MorphEntity(player, EntityType.WITHER_SKELETON) {
+    override fun canUpdateInventory(): Boolean = true
+}
+
+class MorphPig(player: Player) : MorphEntity(player, EntityType.PIG) {
+    override fun onEntitySpawned(entity: Entity) {
+        val pig = entity as? Pig ?: return
+        pig.setSaddle(ThreadLocalRandom.current().nextBoolean())
+        pig.variant = getRegistry(RegistryKey.PIG_VARIANT).localRandom()
+    }
+}
+
+class MorphSheep(player: Player) : MorphEntity(player, EntityType.SHEEP) {
+    override fun onEntitySpawned(entity: Entity) {
+        val sheep = entity as? Sheep ?: return
+        sheep.color = DyeColor.entries.toTypedArray().localRandom()
+    }
+}
+
+class MorphAllay(player: Player) : MorphFlyEntity(player, EntityType.ALLAY)
+
+class MorphBee(player: Player) : MorphFlyEntity(player, EntityType.BEE)
+
+class MorphVex(player: Player) : MorphFlyEntity(player, EntityType.VEX)
+
+class MorphBat(player: Player) : MorphFlyEntity(player, EntityType.BAT) {
     override fun onEntitySpawned(entity: Entity) {
         val bat = entity as? Bat ?: return
         bat.isAwake = true
@@ -100,23 +213,14 @@ class MorphBat(player: Player) : MorphEntity(player, EntityType.BAT) {
     }
 }
 
-class MorphGhast(player: Player) : MorphEntity(player, EntityType.GHAST) {
+class MorphGhast(player: Player) : MorphFlyEntity(player, EntityType.GHAST) {
     override fun start() {
         super.start()
-        player.allowFlight = true
 
         skills[1] = { p ->
             p.launchProjectile(LargeFireball::class.java).apply {
                 yield = 1.0f
             }
-        }
-    }
-
-    override fun stop(clearData: Boolean, stopServer: Boolean) {
-        super.stop(clearData, stopServer)
-        if (player.gameMode != GameMode.CREATIVE && player.gameMode != GameMode.SPECTATOR) {
-            player.allowFlight = false
-            player.isFlying = false
         }
     }
 

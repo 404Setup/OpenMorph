@@ -116,12 +116,12 @@ class PlayerJoin : Listener {
         if (type != null && name != null) {
             val morph = when (type) {
                 "ENTITY" -> {
-                    val et = runCatching { EntityType.valueOf(name) }.getOrNull()
+                    val et = runCatching { EntityType.fromName(name) }.getOrNull()
                     if (et != null) MorphFactory.create(player, et) else null
                 }
 
                 "BLOCK" -> {
-                    val mat = runCatching { Material.valueOf(name) }.getOrNull()
+                    val mat = runCatching { Material.getMaterial(name) }.getOrNull()
                     if (mat != null) MorphBlock(player, mat) else null
                 }
 

@@ -11,6 +11,8 @@ package one.pkg.om.utils
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import one.pkg.om.OmMain
 import org.bukkit.Bukkit
+import org.bukkit.Keyed
+import org.bukkit.Registry
 import org.bukkit.entity.Entity
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
@@ -54,4 +56,10 @@ fun <T> Collection<T>.localRandom(): T {
     if (isEmpty())
         throw NoSuchElementException("Collection is empty.")
     return elementAt(ThreadLocalRandom.current().nextInt(size))
+}
+
+fun <T : Keyed> Registry<T>.localRandom(): T {
+    if (this.size() < 1)
+        throw NoSuchElementException("Registry is empty.")
+    return this.toList().localRandom()
 }

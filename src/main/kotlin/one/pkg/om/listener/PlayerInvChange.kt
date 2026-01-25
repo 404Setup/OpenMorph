@@ -8,18 +8,21 @@
 
 package one.pkg.om.listener
 
-import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent
-import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent
+import io.papermc.paper.event.entity.EntityEquipmentChangedEvent
 import one.pkg.om.OmMain
 import one.pkg.om.manager.OManager
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerChangedMainHandEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
+
 
 class PlayerInvChange : Listener {
     @EventHandler
-    fun onPlayerArmorChange(event: PlayerArmorChangeEvent) {
-        val player = event.getPlayer()
+    fun onPlayerArmorChange(event: EntityEquipmentChangedEvent) {
+        val player = event.entity as? Player ?: return
+        OmMain.getInstance().logger.info { "Player armor changed for ${player.name}" }
         OManager.playerMorph[player]?.let {
             val c = it.current
             if (c != null && c.canUpdateInventory()) {
@@ -28,8 +31,15 @@ class PlayerInvChange : Listener {
         }
     }
 
-    @EventHandler
-    fun onPlayerChangedMainHand(event: PlayerChangedMainHandEvent) {
-        OmMain.getInstance().logger.info { "Player inventory changed for ${event.player.name}" }
+    @EventHandler(priority = EventPriority.MONITOR)
+    fun onPlayerSwapHand(e: PlayerSwapHandItemsEvent) {
+        OmMain.getInstance().logger.info { "Player swap hand for ${e.player.name}" }
+        val player = e.getPlayer()
+        OManager.playerMorph[player]?.let {
+            val c = it.current
+            if (c != null && c.canUpdateInventory()) {
+                c.updateInventory()
+            }
+        }
     }
 }

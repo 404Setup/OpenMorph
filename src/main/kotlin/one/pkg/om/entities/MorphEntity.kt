@@ -132,7 +132,6 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
                 if (invEntity.inventory is EntityEquipment)
                     (invEntity.inventory as EntityEquipment).armorContents = player.inventory.armorContents
             }
-
         }
     }
 

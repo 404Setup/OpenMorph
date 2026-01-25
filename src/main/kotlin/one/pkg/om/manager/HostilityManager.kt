@@ -8,6 +8,7 @@
 
 package one.pkg.om.manager
 
+import one.pkg.om.OmMain
 import org.bukkit.entity.EntityType
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -37,28 +38,40 @@ object HostilityManager {
             Files.walk(path, 1).forEach { filePath ->
                 val fileName = filePath.fileName.toString()
                 if (fileName.endsWith(".txt")) {
-                    val victimName = fileName.removeSuffix(".txt").uppercase()
+                    val victimName = fileName.removeSuffix(".txt").lowercase()
                     try {
-                        val victimType = EntityType.valueOf(victimName)
-                        val aggressors = mutableSetOf<EntityType>()
+                        val victimType = EntityType.fromName(victimName)
+                        if (victimType == null) {
+                            OmMain.getInstance().logger.warning {
+                                "Invalid entity type in hostility file: $victimName"
+                            }
+                        } else {
+                            val aggressors = mutableSetOf<EntityType>()
 
-                        javaClass.classLoader.getResourceAsStream("$resourcePath/$fileName")?.use { stream ->
-                            BufferedReader(InputStreamReader(stream)).use { reader ->
-                                reader.lineSequence().forEach { line ->
-                                    val trimmed = line.trim()
-                                    if (trimmed.isNotEmpty()) {
-                                        try {
-                                            aggressors.add(EntityType.valueOf(trimmed))
-                                        } catch (_: IllegalArgumentException) {
+                            javaClass.classLoader.getResourceAsStream("$resourcePath/$fileName")?.use { stream ->
+                                BufferedReader(InputStreamReader(stream)).use { reader ->
+                                    reader.lineSequence().forEach { line ->
+                                        val trimmed = line.trim()
+                                        if (trimmed.isNotEmpty()) {
+                                            try {
+                                                val e = EntityType.fromName(trimmed)
+                                                if (e == null) {
+                                                    OmMain.getInstance().logger.warning {
+                                                        "Invalid entity type in hostility file: $trimmed"
+                                                    }
+                                                } else aggressors.add(e)
+                                            } catch (_: IllegalArgumentException) {
+                                            }
                                         }
                                     }
                                 }
                             }
+
+                            if (aggressors.isNotEmpty()) {
+                                rules[victimType] = aggressors
+                            }
                         }
 
-                        if (aggressors.isNotEmpty()) {
-                            rules[victimType] = aggressors
-                        }
                     } catch (_: IllegalArgumentException) {
                     }
                 }
