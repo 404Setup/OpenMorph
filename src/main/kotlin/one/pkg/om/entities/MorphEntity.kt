@@ -15,17 +15,10 @@ import one.pkg.om.utils.scheduleResetHealth
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
-import org.bukkit.entity.Enemy
-import org.bukkit.entity.Entity
-import org.bukkit.entity.EntityType
-import org.bukkit.entity.LivingEntity
-import org.bukkit.entity.Player
-import org.bukkit.entity.Pose
+import org.bukkit.entity.*
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerMoveEvent
-import org.bukkit.inventory.EntityEquipment
-import org.bukkit.inventory.InventoryHolder
 import org.bukkit.loot.Lootable
 import org.bukkit.persistence.PersistentDataType
 
@@ -125,12 +118,14 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
     override fun updateInventory() {
         if (!canUpdateInventory()) return
-        if (disguisedEntity != null) {
-            if (disguisedEntity is InventoryHolder) {
-                val invEntity = disguisedEntity as InventoryHolder
-                invEntity.inventory.setItem(0, player.inventory.itemInMainHand)
-                if (invEntity.inventory is EntityEquipment)
-                    (invEntity.inventory as EntityEquipment).armorContents = player.inventory.armorContents
+        disguisedEntity?.let {
+            if (disguisedEntity is LivingEntity) {
+                val livingEntity = disguisedEntity as LivingEntity
+                livingEntity.equipment?.let {
+                    it.armorContents = player.inventory.armorContents
+                    it.setItemInMainHand(player.inventory.itemInMainHand)
+                    it.setItemInOffHand(player.inventory.itemInOffHand)
+                }
             }
         }
     }

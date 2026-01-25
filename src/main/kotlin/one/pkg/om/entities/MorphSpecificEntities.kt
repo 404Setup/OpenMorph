@@ -115,6 +115,7 @@ class MorphChicken(player: Player) : MorphEntity(player, EntityType.CHICKEN) {
         if (ThreadLocalRandom.current().nextBoolean())
             chicken.setAdult()
         chicken.variant = getRegistry(RegistryKey.CHICKEN_VARIANT).localRandom()
+        chicken.pose = Pose.STANDING
     }
 
     override fun canUpdateInventory(): Boolean = true
