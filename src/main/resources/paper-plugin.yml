@@ -1,0 +1,12 @@
+name: OpenMorph
+version: '26.1.1'
+main: one.pkg.om.OmMain
+bootstrapper: one.pkg.om.OmBootstrap
+loader: OmLoader
+api-version: '1.21.11'
+folia-supported: true
+prefix: OpenMorph
+load: STARTUP
+authors: [ 404 ]
+description: An open-source, universal camouflage plugin
+website: https://modrinth.com/plugin/openmorph
