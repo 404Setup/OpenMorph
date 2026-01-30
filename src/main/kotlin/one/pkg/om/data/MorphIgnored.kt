@@ -12,7 +12,22 @@ import org.bukkit.entity.EntityType
 
 object MorphIgnored {
     val ignored: MutableSet<EntityType> = mutableSetOf(
+        EntityType.BLOCK_DISPLAY,
+        EntityType.ITEM_DISPLAY,
+        EntityType.TEXT_DISPLAY,
+        EntityType.MINECART,
+        EntityType.TNT_MINECART,
+        EntityType.CHEST_MINECART,
+        EntityType.HOPPER_MINECART,
+        EntityType.FURNACE_MINECART,
+        EntityType.COMMAND_BLOCK_MINECART,
+        EntityType.SPAWNER_MINECART,
         EntityType.FISHING_BOBBER,
-        EntityType.TNT
+        EntityType.TNT,
+        EntityType.SPLASH_POTION,
+        EntityType.FIREBALL,
+        EntityType.SMALL_FIREBALL,
+        EntityType.SNOWBALL,
+        EntityType.FIREWORK_ROCKET
     )
 }
