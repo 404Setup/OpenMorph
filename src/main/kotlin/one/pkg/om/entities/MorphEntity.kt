@@ -10,9 +10,11 @@ package one.pkg.om.entities
 
 import one.pkg.om.OmMain
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.isIt
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.scheduleResetHealth
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.*
@@ -25,6 +27,7 @@ import org.bukkit.persistence.PersistentDataType
 open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntities(player) {
     var disguisedEntity: Entity? = null
     private var isStopped = false
+    private var lastSyncLocation: Location? = null
 
     open val hasKnockback: Boolean = true
     open val skills = mutableMapOf<Int, (Player) -> Unit>()
@@ -164,10 +167,19 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
         syncLocation()
     }
 
+    // Bolt: Optimization - prevent redundant teleport packets if location/rotation hasn't changed.
+    // This reduces server load and bandwidth usage for idle players.
     private fun syncLocation() {
         val entity = disguisedEntity ?: return
         if (!entity.isValid) return
-        entity.teleportAsync(player.location)
+
+        val currentLocation = player.location
+        if (lastSyncLocation != null && currentLocation.isIt(lastSyncLocation!!)) {
+            return
+        }
+
+        entity.teleportAsync(currentLocation)
+        lastSyncLocation = currentLocation
     }
 
     override fun tick() {

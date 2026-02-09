@@ -40,7 +40,7 @@ fun Player.resetHealth() {
 }
 
 fun Location.isIt(other: Location): Boolean {
-    return world.isIt(other) && x == other.x && y == other.y && z == other.z
+    return world.isIt(other) && x == other.x && y == other.y && z == other.z && yaw == other.yaw && pitch == other.pitch
 }
 
 fun World.isIt(other: World): Boolean {
