@@ -9,6 +9,7 @@
 package one.pkg.om.listener
 
 import one.pkg.om.manager.OManager
+import one.pkg.om.manager.RequestManager
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
@@ -20,5 +21,6 @@ class PlayerLeave : Listener {
         data?.current?.stop(clearData = false)
 
         OManager.scheduleRemoval(e.player)
+        RequestManager.cleanup(e.player)
     }
 }
