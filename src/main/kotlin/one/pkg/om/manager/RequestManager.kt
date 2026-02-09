@@ -20,11 +20,26 @@ import java.util.concurrent.ConcurrentHashMap
 
 object RequestManager {
     private val requests = ConcurrentHashMap<UUID, ConcurrentHashMap<UUID, Long>>()
+    private val cooldowns = ConcurrentHashMap<UUID, Long>()
     private const val TIMEOUT_SECONDS = 30L
+    private const val REQUEST_COOLDOWN_MS = 5000L
+
+    fun cleanup(player: Player) {
+        requests.remove(player.uniqueId)
+        cooldowns.remove(player.uniqueId)
+    }
 
     fun sendRequest(sender: Player, target: Player) {
         val senderId = sender.uniqueId
         val targetId = target.uniqueId
+
+        val lastRequest = cooldowns[senderId] ?: 0L
+        val now = System.currentTimeMillis()
+        if (now - lastRequest < REQUEST_COOLDOWN_MS) {
+            val remaining = (REQUEST_COOLDOWN_MS - (now - lastRequest)) / 1000.0
+            sender.sendWarning("Please wait %.1f seconds before sending another request.".format(remaining))
+            return
+        }
 
         val targetRequests = requests.computeIfAbsent(targetId) { ConcurrentHashMap() }
         if (targetRequests.containsKey(senderId)) {
@@ -39,6 +54,7 @@ object RequestManager {
         }
 
         targetRequests[senderId] = System.currentTimeMillis() + (TIMEOUT_SECONDS * 1000)
+        cooldowns[senderId] = now
 
         sender.sendSuccess("Request sent to ${target.name}. Valid for 30 seconds.")
         target.sendSuccess("${sender.name} wants to add you to their morph list.")
