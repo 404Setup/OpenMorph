@@ -13,6 +13,7 @@ import one.pkg.om.manager.OManager
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.scheduleResetHealth
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.*
@@ -24,6 +25,7 @@ import org.bukkit.persistence.PersistentDataType
 
 open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntities(player) {
     var disguisedEntity: Entity? = null
+    private var lastSyncedLocation: Location? = null
     private var isStopped = false
 
     open val hasKnockback: Boolean = true
@@ -167,7 +169,20 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     private fun syncLocation() {
         val entity = disguisedEntity ?: return
         if (!entity.isValid) return
-        entity.teleportAsync(player.location)
+
+        val loc = player.location
+        val last = lastSyncedLocation
+        if (last != null &&
+            last.world == loc.world &&
+            last.x == loc.x &&
+            last.y == loc.y &&
+            last.z == loc.z &&
+            last.yaw == loc.yaw &&
+            last.pitch == loc.pitch
+        ) return
+
+        entity.teleportAsync(loc)
+        lastSyncedLocation = loc
     }
 
     override fun tick() {
