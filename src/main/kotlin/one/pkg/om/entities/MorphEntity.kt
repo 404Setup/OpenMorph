@@ -163,14 +163,14 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     }
 
     override fun onMove(event: PlayerMoveEvent) {
-        syncLocation()
+        syncLocation(event.to)
     }
 
-    private fun syncLocation() {
+    private fun syncLocation(targetLoc: Location? = null) {
         val entity = disguisedEntity ?: return
         if (!entity.isValid) return
 
-        val loc = player.location
+        val loc = targetLoc ?: player.location
         val last = lastSyncedLocation
         if (last != null &&
             last.world == loc.world &&
@@ -196,7 +196,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             return
         }
 
-        syncLocation()
+        // Location sync is handled by onMove with MONITOR priority
 
         entity.runAs { _ ->
             if (entity is LivingEntity) {
