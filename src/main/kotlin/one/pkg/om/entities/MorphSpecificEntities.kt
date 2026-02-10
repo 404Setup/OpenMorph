@@ -225,16 +225,4 @@ class MorphGhast(player: Player) : MorphFlyEntity(player, EntityType.GHAST) {
         }
     }
 
-    override fun onAttack(event: EntityDamageByEntityEvent) {
-        if (event.damager is LargeFireball) {
-            val entity = event.entity
-            if (entity is LivingEntity) {
-                entity.health = 0.0
-            } else {
-                if (entity is Damageable) {
-                    entity.damage(9999.0)
-                }
-            }
-        }
-    }
 }
