@@ -11,11 +11,12 @@ package one.pkg.om.listener
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.isIt
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
 
 class PlayerMove : Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onPlayerMove(e: PlayerMoveEvent) {
         val from = e.from
         val to = e.to
