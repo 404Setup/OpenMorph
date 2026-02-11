@@ -9,6 +9,7 @@
 package one.pkg.om.listener
 
 import one.pkg.om.entities.MorphBlock
+import one.pkg.om.manager.BlockPosition
 import one.pkg.om.manager.OManager
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -26,15 +27,16 @@ class PlayerInteract : Listener {
         val block = e.clickedBlock ?: return
         val loc = block.location
 
-        for ((p, data) in OManager.playerMorph) {
-             val current = data.current
-             if (current is MorphBlock) {
-                 if (current.isAt(loc)) {
-                     current.onDamage()
-                     e.player.attack(p)
-                     return
-                 }
-             }
+        val pos = BlockPosition(loc.world.name, loc.blockX, loc.blockY, loc.blockZ)
+        val p = OManager.blockMorphs[pos] ?: return
+        val data = OManager.playerMorph[p] ?: return
+        val current = data.current
+        if (current is MorphBlock) {
+            if (current.isAt(loc)) {
+                current.onDamage()
+                e.player.attack(p)
+                return
+            }
         }
     }
 }
