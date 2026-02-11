@@ -221,13 +221,26 @@ data class SaveMorphData(
     }
 
     fun saveToDisk() {
-        val file = (OmMain.getInstance().playerSaveDir / "$player.dat")
-        if (file.exists() && file.length() > 0) {
-            file.delete()
-            file.createNewFile()
-        }
-        file.outputStream().asSink().buffered().use {
-            Avro.encodeToSink(this, it)
+        val lock = fileLocks[(player.hashCode() and 0x7FFFFFFF) % 64]
+        synchronized(lock) {
+            val file = (saveDir / "$player.dat")
+            val tempFile = (saveDir / "$player.dat.tmp")
+
+            if (tempFile.exists()) {
+                tempFile.delete()
+            }
+            tempFile.createNewFile()
+
+            tempFile.outputStream().asSink().buffered().use {
+                Avro.encodeToSink(this, it)
+            }
+
+            java.nio.file.Files.move(
+                tempFile.toPath(),
+                file.toPath(),
+                java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            )
         }
     }
 
@@ -238,11 +251,16 @@ data class SaveMorphData(
     }
 
     companion object {
+        private val fileLocks = Array(64) { Any() }
+        internal var customSaveDir: File? = null
+        private val saveDir: File
+            get() = customSaveDir ?: OmMain.getInstance().playerSaveDir
+
         fun create(player: Player) =
             create(player.uniqueId)
 
         fun create(player: UUID): SaveMorphData {
-            val file = (OmMain.getInstance().playerSaveDir / "$player.dat")
+            val file = (saveDir / "$player.dat")
             if (!file.exists()) {
                 file.createNewFile()
                 return empty(player).apply { markDirty(); saveMe() }
