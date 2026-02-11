@@ -18,13 +18,11 @@ import io.papermc.paper.command.brigadier.Commands
 import one.pkg.om.commands.SubCommand
 import one.pkg.om.manager.BanManager
 import one.pkg.om.utils.op
-import one.pkg.om.utils.sendFailed
+import one.pkg.om.utils.resolveTargetId
 import one.pkg.om.utils.sendSuccess
 import one.pkg.om.utils.sendWarning
 import org.bukkit.Bukkit
-import org.bukkit.Material
 import org.bukkit.entity.EntityType
-import org.bukkit.entity.Player
 import java.util.concurrent.CompletableFuture
 
 class LockCommand : SubCommand {
@@ -56,24 +54,7 @@ class LockCommand : SubCommand {
         val type = StringArgumentType.getString(ctx, "type").lowercase()
 
         var id = if (hasId) StringArgumentType.getString(ctx, "id") else null
-
-        if (id == null) {
-            if (type == "block") {
-                if (sender !is Player) {
-                    sender.sendWarning("Console must specify ID.")
-                    return 0
-                }
-                val item = sender.inventory.itemInMainHand
-                if (!item.type.isBlock || item.type == Material.AIR) {
-                    sender.sendFailed("You must hold a block.")
-                    return 0
-                }
-                id = item.type.name
-            } else {
-                sender.sendWarning("Usage: /om lock <type> <id>")
-                return 0
-            }
-        }
+        id = resolveTargetId(sender, type, id, "lock") ?: return 0
 
         if (BanManager.isLocked(type, id)) {
             sender.sendWarning("$type $id is already locked.")
