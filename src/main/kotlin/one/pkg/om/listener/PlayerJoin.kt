@@ -13,6 +13,7 @@ import one.pkg.om.entities.*
 import one.pkg.om.manager.OManager
 import one.pkg.om.data.OnlineMorphData
 import one.pkg.om.data.SaveMorphData
+import one.pkg.om.utils.OmKeys
 import one.pkg.om.utils.runDelayed
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -32,12 +33,12 @@ class PlayerJoin : Listener {
 
         player.getNearbyEntities(15.0, 15.0, 15.0).forEach { e ->
             if (e.persistentDataContainer.has(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING
                 )
             ) {
                 val uuidStr = e.persistentDataContainer.get(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING
                 )
                 if (uuidStr == player.uniqueId.toString()) e.remove()
@@ -184,12 +185,12 @@ class PlayerJoin : Listener {
 
             player.getNearbyEntities(20.0, 20.0, 20.0).forEach { e ->
                 if (e.persistentDataContainer.has(
-                        NamespacedKey(OmMain.getInstance(), "om_owner"),
+                        OmKeys.OWNER_KEY,
                         PersistentDataType.STRING
                     )
                 ) {
                     val uuidStr = e.persistentDataContainer.get(
-                        NamespacedKey(OmMain.getInstance(), "om_owner"),
+                        OmKeys.OWNER_KEY,
                         PersistentDataType.STRING
                     )
                     if (uuidStr == player.uniqueId.toString()) {

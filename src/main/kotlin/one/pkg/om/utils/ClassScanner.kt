@@ -10,7 +10,6 @@ package one.pkg.om.utils
 
 import one.pkg.om.OmMain
 import java.io.File
-import java.net.URLDecoder
 import java.util.jar.JarFile
 
 object ClassScanner {
@@ -20,8 +19,12 @@ object ClassScanner {
         val src = plugin.javaClass.protectionDomain.codeSource ?: return emptyList()
 
         val srcLoc = src.location
-        val path = URLDecoder.decode(srcLoc.path, "UTF-8")
-        val file = File(path)
+        val file = try {
+            File(srcLoc.toURI())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return emptyList()
+        }
 
         if (file.isDirectory) {
             scanDir(file, packageName, classes)
@@ -67,8 +70,12 @@ object ClassScanner {
         val plugin = OmMain.getInstance()
         val src = plugin.javaClass.protectionDomain.codeSource ?: return null
         val srcLoc = src.location
-        val path = URLDecoder.decode(srcLoc.path, "UTF-8")
-        val rootFile = File(path)
+        val rootFile = try {
+            File(srcLoc.toURI())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
 
         val relativePath = classFile.absolutePath.removePrefix(rootFile.absolutePath)
             .removePrefix(File.separator)

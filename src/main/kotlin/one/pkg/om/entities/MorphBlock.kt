@@ -10,6 +10,7 @@ package one.pkg.om.entities
 
 import one.pkg.om.OmMain
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.OmKeys
 import one.pkg.om.utils.RestrictedBlocks
 import one.pkg.om.utils.isIt
 import one.pkg.om.utils.runAs
@@ -130,7 +131,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 it.block = material.createBlockData()
                 it.isPersistent = false
                 it.persistentDataContainer.set(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING,
                     player.uniqueId.toString()
                 )
@@ -145,7 +146,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 it.interactionHeight = 1.0f
                 it.isPersistent = false
                 it.persistentDataContainer.set(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING,
                     player.uniqueId.toString()
                 )
