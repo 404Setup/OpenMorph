@@ -237,7 +237,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
                 }
 
                 if (player.pose != entity.pose) {
-                    // TODO: Implement pose synchronization
+                    entity.pose = player.pose
                 }
             }
 
