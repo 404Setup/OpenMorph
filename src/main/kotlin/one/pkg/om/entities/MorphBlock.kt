@@ -9,6 +9,7 @@
 package one.pkg.om.entities
 
 import one.pkg.om.OmMain
+import one.pkg.om.manager.BlockPosition
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.OmKeys
 import one.pkg.om.utils.RestrictedBlocks
@@ -215,6 +216,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                     legs.z,
                     previousGameMode?.name ?: "SURVIVAL"
                 )
+                OManager.blockMorphs[BlockPosition(legs.world.name, legs.x, legs.y, legs.z)] = player
             }
         }
     }
@@ -234,6 +236,14 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
             if (success) {
                 OManager.playerMorph[player]?.offlineData?.clearSolidifiedBlock()
             }
+            OManager.blockMorphs.remove(
+                BlockPosition(
+                    solidifiedLocation!!.world.name,
+                    solidifiedLocation!!.blockX,
+                    solidifiedLocation!!.blockY,
+                    solidifiedLocation!!.blockZ
+                )
+            )
             solidifiedLocation = null
         }
 
