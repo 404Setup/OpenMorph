@@ -10,10 +10,17 @@ package one.pkg.om.manager
 
 import one.pkg.om.OmMain
 import one.pkg.om.utils.div
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 object BanManager {
-    private val file by lazy { OmMain.getInstance().dataFolder / "locked_morphs.txt" }
+    internal var customFile: File? = null
+
+    private val defaultFile by lazy { OmMain.getInstance().dataFolder / "locked_morphs.txt" }
+
+    private val file: File
+        get() = customFile ?: defaultFile
+
     private val lockedMorphs = ConcurrentHashMap.newKeySet<String>()
 
     fun load() {
@@ -39,13 +46,21 @@ object BanManager {
     }
 
     fun lock(type: String, id: String) {
+        validateInput(type, id)
         lockedMorphs.add("${type.lowercase()}:${id.lowercase()}")
         save()
     }
 
     fun unlock(type: String, id: String) {
+        validateInput(type, id)
         lockedMorphs.remove("${type.lowercase()}:${id.lowercase()}")
         save()
+    }
+
+    private fun validateInput(type: String, id: String) {
+        if (type.contains("\n") || id.contains("\n") || type.contains("\r") || id.contains("\r")) {
+            throw IllegalArgumentException("Type and ID cannot contain newline characters")
+        }
     }
 
     fun getLockedIds(type: String): List<String> {

@@ -11,8 +11,11 @@ package one.pkg.om.entities
 import one.pkg.om.OmMain
 import one.pkg.om.manager.BlockPosition
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.OmKeys
+import one.pkg.om.utils.RestrictedBlocks
 import one.pkg.om.utils.isIt
 import one.pkg.om.utils.runAs
+import one.pkg.om.utils.sendFailed
 import org.bukkit.*
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Interaction
@@ -129,7 +132,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 it.block = material.createBlockData()
                 it.isPersistent = false
                 it.persistentDataContainer.set(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING,
                     player.uniqueId.toString()
                 )
@@ -144,7 +147,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 it.interactionHeight = 1.0f
                 it.isPersistent = false
                 it.persistentDataContainer.set(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING,
                     player.uniqueId.toString()
                 )
@@ -196,6 +199,11 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
         player.teleportAsync(centerLoc).thenRun {
             if (!isRunning) return@thenRun
             player.runAs { _ ->
+                if (RestrictedBlocks.isRestricted(material) && !player.hasPermission("om.morph.block.bypass_restricted")) {
+                    player.sendFailed("You cannot solidify as this block!")
+                    return@runAs
+                }
+
                 player.gameMode = GameMode.SPECTATOR
                 solidifiedLocation = legs.location
                 legs.setType(material, false)

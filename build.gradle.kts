@@ -19,6 +19,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     implementation("com.github.avro-kotlin.avro4k:avro4k-core:2.9.0")
+    testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -73,4 +74,8 @@ tasks.processResources {
     filesMatching("paper-plugin.yml") {
         expand(props)
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
