@@ -27,6 +27,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     var disguisedEntity: Entity? = null
     private var lastSyncedLocation: Location? = null
     private var isStopped = false
+    private var tickCounter = 0
 
     open val hasKnockback: Boolean = true
     open val skills = mutableMapOf<Int, (Player) -> Unit>()
@@ -187,6 +188,12 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
     override fun tick() {
         if (isStopped) return
+        // Throttle tick execution if there are no passive skills to run.
+        // Location sync is handled by PlayerMoveEvent, so this only affects
+        // health/pose sync and disguise respawn, which don't need 20Hz updates.
+        // This reduces scheduler overhead by 80%.
+        if (passiveSkills.isEmpty() && tickCounter++ % 5 != 0) return
+
         if (disguisedEntity == null || !disguisedEntity!!.isValid) {
             spawnDisguise()
             if (disguisedEntity == null) return
