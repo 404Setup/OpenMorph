@@ -223,6 +223,7 @@ class MorphGhast(player: Player) : MorphFlyEntity(player, EntityType.GHAST) {
                 yield = 1.0f
             }
         }
+        skillCooldowns[1] = 2000L
     }
 
 }

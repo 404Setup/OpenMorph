@@ -12,6 +12,7 @@ import one.pkg.om.OmMain
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.scheduleResetHealth
+import one.pkg.om.utils.sendWarning
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
@@ -31,6 +32,8 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     open val hasKnockback: Boolean = true
     open val skills = mutableMapOf<Int, (Player) -> Unit>()
     open val passiveSkills = mutableListOf<() -> Unit>()
+    open val skillCooldowns = mutableMapOf<Int, Long>()
+    private val lastSkillUsage = mutableMapOf<Int, Long>()
 
     override fun start() {
         cleanupGhosts()
@@ -231,6 +234,18 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     }
 
     fun useSkill(id: Int) {
-        skills[id]?.invoke(player)
+        val now = System.currentTimeMillis()
+        val cooldown = skillCooldowns[id] ?: 0L
+        val last = lastSkillUsage[id] ?: 0L
+
+        if (now - last < cooldown) {
+            player.sendWarning("Skill on cooldown: %.1fs".format((cooldown - (now - last)) / 1000.0))
+            return
+        }
+
+        if (skills.containsKey(id)) {
+            skills[id]?.invoke(player)
+            lastSkillUsage[id] = now
+        }
     }
 }
