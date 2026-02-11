@@ -31,17 +31,25 @@ class PlayerJoin : Listener {
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
 
-        player.getNearbyEntities(15.0, 15.0, 15.0).forEach { e ->
-            if (e.persistentDataContainer.has(
-                    OmKeys.OWNER_KEY,
-                    PersistentDataType.STRING
-                )
-            ) {
-                val uuidStr = e.persistentDataContainer.get(
-                    OmKeys.OWNER_KEY,
-                    PersistentDataType.STRING
-                )
-                if (uuidStr == player.uniqueId.toString()) e.remove()
+        player.runDelayed(1L) {
+            if (!player.isOnline) return@runDelayed
+            val current = OManager.playerMorph[player]?.current
+            player.getNearbyEntities(15.0, 15.0, 15.0).forEach { e ->
+                if (e.persistentDataContainer.has(
+                        OmKeys.OWNER_KEY,
+                        PersistentDataType.STRING
+                    )
+                ) {
+                    val uuidStr = e.persistentDataContainer.get(
+                        OmKeys.OWNER_KEY,
+                        PersistentDataType.STRING
+                    )
+                    if (uuidStr == player.uniqueId.toString()) {
+                        if (!isSameEntity(e, current)) {
+                            e.remove()
+                        }
+                    }
+                }
             }
         }
 
