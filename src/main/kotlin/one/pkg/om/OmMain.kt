@@ -11,15 +11,11 @@ package one.pkg.om
 import OMetrics
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import one.pkg.om.commands.OmCommand
-import one.pkg.om.entities.MorphEntity
 import one.pkg.om.manager.BanManager
-import one.pkg.om.manager.HostilityManager
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.ClassScanner
 import one.pkg.om.utils.div
-import one.pkg.om.utils.runAs
 import one.pkg.om.utils.runGlobalTaskTimer
-import org.bukkit.entity.Mob
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -77,25 +73,6 @@ class OmMain : JavaPlugin() {
 
         runGlobalTaskTimer(1L, 1L) {
             OManager.playerMorph.values.forEach { it.tick() }
-        }
-
-        runGlobalTaskTimer(20L, 20L) {
-            OManager.playerMorph.forEach { (player, data) ->
-                val morph = data.current
-                if (morph is MorphEntity) {
-                    player.runAs {
-                        player.getNearbyEntities(15.0, 15.0, 15.0).forEach { entity ->
-                            if (entity is Mob) {
-                                if (entity.target == null) {
-                                    if (HostilityManager.shouldAttack(entity.type, morph.entityType)) {
-                                        entity.target = player
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 

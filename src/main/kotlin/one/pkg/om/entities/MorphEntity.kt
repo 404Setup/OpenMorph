@@ -9,6 +9,7 @@
 package one.pkg.om.entities
 
 import one.pkg.om.OmMain
+import one.pkg.om.manager.HostilityManager
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.scheduleResetHealth
@@ -28,7 +29,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     var disguisedEntity: Entity? = null
     private var lastSyncedLocation: Location? = null
     private var isStopped = false
-    private var tickCounter = 0
+    private var tickCounter = player.entityId
 
     open val hasKnockback: Boolean = true
     open val skills = mutableMapOf<Int, (Player) -> Unit>()
@@ -191,11 +192,29 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
     override fun tick() {
         if (isStopped) return
+
+        val currentTick = tickCounter++
+
+        if (currentTick % 40 == 0) {
+            var count = 0
+            player.getNearbyEntities(15.0, 15.0, 15.0).forEach { entity ->
+                if (count++ < 50) {
+                    if (entity is Mob) {
+                        if (entity.target == null) {
+                            if (HostilityManager.shouldAttack(entity.type, entityType)) {
+                                entity.target = player
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Throttle tick execution if there are no passive skills to run.
         // Location sync is handled by PlayerMoveEvent, so this only affects
         // health/pose sync and disguise respawn, which don't need 20Hz updates.
         // This reduces scheduler overhead by 80%.
-        if (passiveSkills.isEmpty() && tickCounter++ % 5 != 0) return
+        if (passiveSkills.isEmpty() && currentTick % 5 != 0) return
 
         if (disguisedEntity == null || !disguisedEntity!!.isValid) {
             spawnDisguise()
