@@ -10,6 +10,7 @@ package one.pkg.om.entities
 
 import one.pkg.om.OmMain
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.OmKeys
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.scheduleResetHealth
 import one.pkg.om.utils.sendWarning
@@ -57,12 +58,12 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     private fun cleanupGhosts() {
         player.getNearbyEntities(10.0, 10.0, 10.0).forEach { e ->
             if (e.persistentDataContainer.has(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING
                 )
             ) {
                 val uuidStr = e.persistentDataContainer.get(
-                    NamespacedKey(OmMain.getInstance(), "om_owner"),
+                    OmKeys.OWNER_KEY,
                     PersistentDataType.STRING
                 )
                 if (uuidStr == player.uniqueId.toString()) {
@@ -92,7 +93,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             entity.isPersistent = false
 
             entity.persistentDataContainer.set(
-                NamespacedKey(OmMain.getInstance(), "om_owner"),
+                OmKeys.OWNER_KEY,
                 PersistentDataType.STRING,
                 player.uniqueId.toString()
             )
