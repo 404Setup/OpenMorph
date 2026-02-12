@@ -199,6 +199,12 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
         player.teleportAsync(centerLoc).thenRun {
             if (!isRunning) return@thenRun
             player.runAs { _ ->
+                // Security fix: Re-validate block state to prevent race conditions (TOCTOU)
+                if (!legs.isReplaceable) {
+                    player.sendFailed("Cannot solidify: Block is obstructed.")
+                    return@runAs
+                }
+
                 if (RestrictedBlocks.isRestricted(material) && !player.hasPermission("om.morph.block.bypass_restricted")) {
                     player.sendFailed("You cannot solidify as this block!")
                     return@runAs
