@@ -9,3 +9,7 @@
 ## 2025-10-27 - [Bukkit Entity Filtering]
 **Learning:** `player.getNearbyEntities(x, y, z)` iterates over all entities in the chunk area, creating Java wrappers for each (including items, projectiles, etc.), which can be slow in dense areas. More importantly, iterating with a generic `count < limit` over the *entire* collection means the limit can be exhausted by non-target entities, causing logic failures (e.g., ignoring mobs in favor of dropped items).
 **Action:** Use `world.getNearbyEntities(BoundingBox, Predicate)` to filter entities engine-side. This avoids wrapper overhead for irrelevant entities and ensures iteration limits apply only to the desired target type.
+
+## 2024-05-21 - [Optimizing getNearbyEntities with limit]
+**Learning:** Limiting `getNearbyEntities` collection size via the predicate significantly reduces memory allocation and iteration overhead when many entities are present.
+**Action:** Use a counter in the predicate to stop collecting entities once a limit is reached, instead of collecting all and filtering later.
