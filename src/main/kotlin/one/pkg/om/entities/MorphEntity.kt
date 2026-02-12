@@ -198,13 +198,12 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
         if (currentTick % 40 == 0) {
             var count = 0
-            player.getNearbyEntities(15.0, 15.0, 15.0).forEach { entity ->
+            player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0)) { it is Mob }.forEach { entity ->
                 if (count++ < 50) {
-                    if (entity is Mob) {
-                        if (entity.target == null) {
-                            if (HostilityManager.shouldAttack(entity.type, entityType)) {
-                                entity.target = player
-                            }
+                    val mob = entity as Mob
+                    if (mob.target == null) {
+                        if (HostilityManager.shouldAttack(mob.type, entityType)) {
+                            mob.target = player
                         }
                     }
                 }
