@@ -246,9 +246,6 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     }
 
     override fun onDamage(event: EntityDamageEvent) {
-        if (!hasKnockback && !event.isCancelled) {
-            // TODO: Implement knockback handling
-        }
     }
 
     override fun onAttack(event: EntityDamageByEntityEvent) {
