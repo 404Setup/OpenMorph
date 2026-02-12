@@ -198,13 +198,20 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
         if (currentTick % 40 == 0) {
             var count = 0
-            player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0)) { it is Mob }.forEach { entity ->
-                if (count++ < 50) {
-                    val mob = entity as Mob
-                    if (mob.target == null) {
-                        if (HostilityManager.shouldAttack(mob.type, entityType)) {
-                            mob.target = player
-                        }
+            // Optimization: Limit collection size at source to avoid large allocations and iterations
+            // when many mobs are nearby (e.g. mob farms).
+            player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0)) {
+                if (count >= 50) return@getNearbyEntities false
+                if (it is Mob) {
+                    count++
+                    return@getNearbyEntities true
+                }
+                false
+            }.forEach { entity ->
+                val mob = entity as Mob
+                if (mob.target == null) {
+                    if (HostilityManager.shouldAttack(mob.type, entityType)) {
+                        mob.target = player
                     }
                 }
             }
