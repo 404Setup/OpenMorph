@@ -26,7 +26,22 @@ object RestrictedBlocks {
         Material.NETHER_PORTAL,
         Material.SPAWNER,
         Material.DRAGON_EGG,
-        Material.DEBUG_STICK
+        Material.DEBUG_STICK,
+        // Griefing blocks
+        Material.TNT,
+        Material.LAVA,
+        Material.WATER,
+        Material.FIRE,
+        Material.SOUL_FIRE,
+        Material.CAMPFIRE,
+        Material.SOUL_CAMPFIRE,
+        // Lag/Redstone/Technical blocks
+        Material.DISPENSER,
+        Material.DROPPER,
+        Material.OBSERVER,
+        Material.PISTON,
+        Material.STICKY_PISTON,
+        Material.HOPPER
     )
 
     fun isRestricted(material: Material): Boolean {
