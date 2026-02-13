@@ -202,18 +202,13 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             // when many mobs are nearby (e.g. mob farms).
             player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0)) {
                 if (count >= 50) return@getNearbyEntities false
-                if (it is Mob) {
+                if (it is Mob && it.target == null && HostilityManager.shouldAttack(it.type, entityType)) {
                     count++
                     return@getNearbyEntities true
                 }
                 false
             }.forEach { entity ->
-                val mob = entity as Mob
-                if (mob.target == null) {
-                    if (HostilityManager.shouldAttack(mob.type, entityType)) {
-                        mob.target = player
-                    }
-                }
+                (entity as Mob).target = player
             }
         }
 
