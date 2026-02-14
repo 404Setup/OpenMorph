@@ -11,6 +11,8 @@ package one.pkg.om.manager
 import one.pkg.om.OmMain
 import one.pkg.om.utils.div
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.concurrent.ConcurrentHashMap
 
 object BanManager {
@@ -35,7 +37,16 @@ object BanManager {
 
     fun save() {
         try {
-            file.writeText(lockedMorphs.joinToString("\n"))
+            // Security: Use atomic write to prevent data corruption/loss on crash
+            val tempFile = File(file.absolutePath + ".tmp")
+            tempFile.writeText(lockedMorphs.joinToString("\n"))
+
+            Files.move(
+                tempFile.toPath(),
+                file.toPath(),
+                StandardCopyOption.ATOMIC_MOVE,
+                StandardCopyOption.REPLACE_EXISTING
+            )
         } catch (e: Exception) {
             e.printStackTrace()
         }
