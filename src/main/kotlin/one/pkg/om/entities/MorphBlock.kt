@@ -34,6 +34,8 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private var solidifiedLocation: Location? = null
     private var previousGameMode: GameMode? = null
     private var isRunning = false
+    // Optimization: Track last synced location to avoid redundant teleport packets
+    private var lastSyncedLocation: Location? = null
 
     override fun start() {
         isRunning = true
@@ -105,10 +107,22 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
 
     private fun syncLocation() {
         if (!isSolidified) {
-            val loc = player.location.clone()
+            val loc = player.location
             loc.pitch = 0f
+
+            val last = lastSyncedLocation
+            if (last != null &&
+                last.world == loc.world &&
+                last.x == loc.x &&
+                last.y == loc.y &&
+                last.z == loc.z &&
+                last.yaw == loc.yaw &&
+                last.pitch == loc.pitch
+            ) return
+
             displayEntity?.teleportAsync(loc)
             interactionEntity?.teleportAsync(loc)
+            lastSyncedLocation = loc
         }
     }
 
