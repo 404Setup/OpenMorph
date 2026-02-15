@@ -98,10 +98,13 @@ object RequestManager {
 
             val skin = skinVal ?: ""
 
-            senderData.offlineData.addPlayer(SavePlayerData(receiverId, receiver.name, skin))
-
-            sender.sendSuccess("${receiver.name} accepted your request.")
-            receiver.sendSuccess("You accepted ${sender.name}'s request.")
+            if (senderData.offlineData.addPlayer(SavePlayerData(receiverId, receiver.name, skin))) {
+                sender.sendSuccess("${receiver.name} accepted your request.")
+                receiver.sendSuccess("You accepted ${sender.name}'s request.")
+            } else {
+                sender.sendWarning("Could not add ${receiver.name} because your morph list is full.")
+                receiver.sendWarning("Could not add to ${sender.name}'s list because it is full.")
+            }
         }
     }
 
