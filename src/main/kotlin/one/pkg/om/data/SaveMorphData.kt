@@ -123,6 +123,7 @@ data class SaveMorphData(
         } else if (blocks.contains("all")) return false
 
         if (!blocks.contains(mat)) {
+            if (blocks.size >= MAX_MORPHS) return false
             blocks.add(mat)
             markDirty()
             return true
@@ -150,20 +151,23 @@ data class SaveMorphData(
         return entities.contains(type.uppercase())
     }
 
-    fun addEntity(type: String) {
+    fun addEntity(type: String): Boolean {
         val et = type.lowercase()
         if (et == "all") {
             entities.clear()
             entities.add("all")
             markDirty()
-            return
+            return true
         }
-        if (entities.contains("all")) return
+        if (entities.contains("all")) return false
 
         if (!entities.contains(et)) {
+            if (entities.size >= MAX_MORPHS) return false
             entities.add(et)
             markDirty()
+            return true
         }
+        return false
     }
 
     fun removeEntity(type: String): Boolean {
@@ -189,10 +193,12 @@ data class SaveMorphData(
         return players.any { it.name.equals(name, ignoreCase = true) } || players.any { it.name == "all" }
     }
 
-    fun addPlayer(data: SavePlayerData) {
+    fun addPlayer(data: SavePlayerData): Boolean {
         players.removeIf { it.name.equals(data.name, ignoreCase = true) || it.uuid == data.uuid }
+        if (players.size >= MAX_MORPHS) return false
         players.add(data)
         markDirty()
+        return true
     }
 
     fun removePlayer(name: String): Boolean {
@@ -251,6 +257,7 @@ data class SaveMorphData(
     }
 
     companion object {
+        const val MAX_MORPHS = 100
         private val fileLocks = Array(64) { Any() }
         internal var customSaveDir: File? = null
         private val saveDir: File

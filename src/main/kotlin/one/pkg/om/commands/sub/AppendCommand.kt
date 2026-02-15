@@ -87,8 +87,11 @@ class AppendCommand : SubCommand {
                     sender.sendFailed("$id is ignored by the plugin.")
                     return 0
                 }
-                data.offlineData.addEntity(id)
-                sender.sendSuccess("Added entity $id to $targetName")
+                if (data.offlineData.addEntity(id)) {
+                    sender.sendSuccess("Added entity $id to $targetName")
+                } else {
+                    sender.sendFailed("Could not add entity $id (Limit reached?)")
+                }
             }
 
             "block" -> {
@@ -111,8 +114,11 @@ class AppendCommand : SubCommand {
                         return 0
                     }
                 }
-                data.offlineData.addBlock(block.name)
-                sender.sendSuccess("Added block $id to $targetName")
+                if (data.offlineData.addBlock(block.name)) {
+                    sender.sendSuccess("Added block $id to $targetName")
+                } else {
+                    sender.sendFailed("Could not add block $id (Limit reached?)")
+                }
             }
 
             "player" -> {
@@ -121,15 +127,18 @@ class AppendCommand : SubCommand {
                     return 0
                 }
                 if (id.equals("all", ignoreCase = true)) {
+                    var count = 0
                     Bukkit.getOnlinePlayers().forEach { p ->
                         if (!data.offlineData.hasPlayer(p.uniqueId)) {
                             val profile = p.playerProfile
                             val textures = profile.properties.firstOrNull { it.name == "textures" }
                             val skinData = if (textures != null) "${textures.value};${textures.signature ?: ""}" else ""
-                            data.offlineData.addPlayer(SavePlayerData(p.uniqueId, p.name, skinData))
+                            if (data.offlineData.addPlayer(SavePlayerData(p.uniqueId, p.name, skinData))) {
+                                count++
+                            }
                         }
                     }
-                    sender.sendSuccess("Added all online players to $targetName")
+                    sender.sendSuccess("Added $count online players to $targetName")
                 } else {
                     val p = Bukkit.getPlayer(id)
                     if (p != null) {
@@ -142,16 +151,22 @@ class AppendCommand : SubCommand {
                         val textures = profile.properties.firstOrNull { it.name == "textures" }
                         val skinData = if (textures != null) "${textures.value};${textures.signature ?: ""}" else ""
 
-                        data.offlineData.addPlayer(SavePlayerData(p.uniqueId, p.name, skinData))
-                        sender.sendSuccess("Added player ${p.name} to $targetName")
+                        if (data.offlineData.addPlayer(SavePlayerData(p.uniqueId, p.name, skinData))) {
+                            sender.sendSuccess("Added player ${p.name} to $targetName")
+                        } else {
+                            sender.sendFailed("Could not add player ${p.name} (Limit reached?)")
+                        }
                     } else {
                         val offlineP = Bukkit.getOfflinePlayer(id)
                         if (data.offlineData.hasPlayer(offlineP.uniqueId)) {
                             sender.sendFailed("$targetName already has player $id")
                             return 0
                         }
-                        data.offlineData.addPlayer(SavePlayerData(offlineP.uniqueId, id, ""))
-                        sender.sendFailed("Added player $id (Offline/Unknown) to $targetName")
+                        if (data.offlineData.addPlayer(SavePlayerData(offlineP.uniqueId, id, ""))) {
+                            sender.sendFailed("Added player $id (Offline/Unknown) to $targetName")
+                        } else {
+                            sender.sendFailed("Could not add player $id (Limit reached?)")
+                        }
                     }
                 }
             }
