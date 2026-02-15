@@ -36,6 +36,8 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private var isRunning = false
     // Optimization: Track last synced location to avoid redundant teleport packets
     private var lastSyncedLocation: Location? = null
+    // Reuse location object to avoid allocations in tick loop
+    private val scratchLocation = Location(player.world, 0.0, 0.0, 0.0)
 
     override fun start() {
         isRunning = true
@@ -107,19 +109,20 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
 
     private fun syncLocation() {
         if (!isSolidified) {
-            val loc = player.location
-            loc.pitch = 0f
+            player.getLocation(scratchLocation)
+            scratchLocation.pitch = 0f
 
             val last = lastSyncedLocation
             if (last != null &&
-                last.world == loc.world &&
-                last.x == loc.x &&
-                last.y == loc.y &&
-                last.z == loc.z &&
-                last.yaw == loc.yaw &&
-                last.pitch == loc.pitch
+                last.world == scratchLocation.world &&
+                last.x == scratchLocation.x &&
+                last.y == scratchLocation.y &&
+                last.z == scratchLocation.z &&
+                last.yaw == scratchLocation.yaw &&
+                last.pitch == scratchLocation.pitch
             ) return
 
+            val loc = scratchLocation.clone()
             displayEntity?.teleportAsync(loc)
             interactionEntity?.teleportAsync(loc)
             lastSyncedLocation = loc
