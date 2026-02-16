@@ -229,26 +229,28 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
         // Location sync is handled by onMove with MONITOR priority
 
-        val syncTask = {
-            if (entity is LivingEntity) {
-                val attr = Attribute.MAX_HEALTH
-                val targetHealth = player.health.coerceAtMost(entity.getAttribute(attr)?.value ?: 20.0)
-                if (entity.health != targetHealth) {
-                    entity.health = targetHealth
-                }
+        if (Bukkit.isOwnedByCurrentRegion(entity)) {
+            syncEntityState(entity)
+        } else {
+            entity.runAs { _ -> syncEntityState(entity) }
+        }
+    }
 
-                if (player.pose != entity.pose) {
-                    entity.pose = player.pose
-                }
+    private fun syncEntityState(entity: Entity) {
+        if (entity is LivingEntity) {
+            val attr = Attribute.MAX_HEALTH
+            val targetHealth = player.health.coerceAtMost(entity.getAttribute(attr)?.value ?: 20.0)
+            if (entity.health != targetHealth) {
+                entity.health = targetHealth
             }
 
-            passiveSkills.forEach { it.invoke() }
+            if (player.pose != entity.pose) {
+                entity.pose = player.pose
+            }
         }
 
-        if (Bukkit.isOwnedByCurrentRegion(entity)) {
-            syncTask()
-        } else {
-            entity.runAs { _ -> syncTask() }
+        if (passiveSkills.isNotEmpty()) {
+            passiveSkills.forEach { it.invoke() }
         }
     }
 
