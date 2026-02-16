@@ -13,3 +13,7 @@
 ## 2024-05-21 - [Optimizing getNearbyEntities with limit]
 **Learning:** Limiting `getNearbyEntities` collection size via the predicate significantly reduces memory allocation and iteration overhead when many entities are present.
 **Action:** Use a counter in the predicate to stop collecting entities once a limit is reached, instead of collecting all and filtering later.
+
+## 2026-02-16 - [Kotlin Lambda Allocation in Hot Loops]
+**Learning:** In Kotlin, defining a lambda that captures local variables inside a frequently executed method (like `tick()`) forces a new object allocation on every execution. Even if executed every few ticks, this adds up across many entities. Additionally, iterating over an empty `MutableList` using `forEach` allocates an iterator.
+**Action:** Extract logic into private methods instead of using local lambdas for tasks. Guard `forEach` loops on potentially empty lists with `isNotEmpty()` to avoid iterator allocation.
