@@ -14,37 +14,41 @@ import org.bukkit.Bukkit
 import org.bukkit.Keyed
 import org.bukkit.Registry
 import org.bukkit.entity.Entity
+import org.bukkit.plugin.Plugin
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 
+internal var testPluginInstance: Plugin? = null
+private fun getPlugin(): Plugin = testPluginInstance ?: OmMain.getInstance()
+
 operator fun File.div(other: String): File = this.resolve(other)
 
 fun runAsync(task: Consumer<ScheduledTask>): ScheduledTask =
-    Bukkit.getAsyncScheduler().runNow(OmMain.getInstance(), task)
+    Bukkit.getAsyncScheduler().runNow(getPlugin(), task)
 
 fun runGlobalTaskTimer(initialDelayTicks: Long, periodTicks: Long, task: Consumer<ScheduledTask>) =
     Bukkit.getGlobalRegionScheduler().runAtFixedRate(
-        OmMain.getInstance(), task, initialDelayTicks, periodTicks
+        getPlugin(), task, initialDelayTicks, periodTicks
     )
 
 fun runGlobalTask(task: Consumer<ScheduledTask>) =
-    Bukkit.getGlobalRegionScheduler().run(OmMain.getInstance(), task)
+    Bukkit.getGlobalRegionScheduler().run(getPlugin(), task)
 
 fun runTaskLater(delayTicks: Long, task: Consumer<ScheduledTask>) =
-    Bukkit.getGlobalRegionScheduler().runDelayed(OmMain.getInstance(), task, delayTicks)
+    Bukkit.getGlobalRegionScheduler().runDelayed(getPlugin(), task, delayTicks)
 
 fun Entity.runDelayed(retired: Runnable?, delayTicks: Long, task: Consumer<ScheduledTask>) =
-    this.scheduler.runDelayed(OmMain.getInstance(), task, retired, delayTicks)
+    this.scheduler.runDelayed(getPlugin(), task, retired, delayTicks)
 
 fun Entity.runDelayed(delayTicks: Long, task: Consumer<ScheduledTask>) =
     runDelayed(null, delayTicks, task)
 
 fun Entity.runAs(retired: Runnable?, task: Consumer<ScheduledTask>) =
-    this.scheduler.run(OmMain.getInstance(), task, retired)
+    this.scheduler.run(getPlugin(), task, retired)
 
 fun Entity.runAs(task: Consumer<ScheduledTask>) =
-    this.scheduler.run(OmMain.getInstance(), task, null)
+    this.scheduler.run(getPlugin(), task, null)
 
 fun <T> Array<out T>.localRandom(): T {
     if (isEmpty())
