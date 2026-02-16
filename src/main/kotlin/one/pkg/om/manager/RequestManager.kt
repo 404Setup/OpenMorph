@@ -95,8 +95,10 @@ object RequestManager {
             val profile = receiver.playerProfile
             val textures = profile.properties.find { it.name == "textures" }
             val skinVal = textures?.value
+            val skinSig = textures?.signature
 
-            val skin = skinVal ?: ""
+            // Security Fix: Include signature to ensure skin integrity and client-side verification
+            val skin = if (skinVal != null) "$skinVal;${skinSig ?: ""}" else ""
 
             if (senderData.offlineData.addPlayer(SavePlayerData(receiverId, receiver.name, skin))) {
                 sender.sendSuccess("${receiver.name} accepted your request.")
