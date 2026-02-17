@@ -19,6 +19,9 @@ import one.pkg.om.utils.sendFailed
 import org.bukkit.*
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Interaction
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerMoveEvent
@@ -224,6 +227,23 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
 
                 if (RestrictedBlocks.isRestricted(material) && !player.hasPermission("om.morph.block.bypass_restricted")) {
                     player.sendFailed("You cannot solidify as this block!")
+                    return@runAs
+                }
+
+                // Security: Fire BlockPlaceEvent to check for build permissions and region protection
+                val event = BlockPlaceEvent(
+                    legs,
+                    legs.state,
+                    ground,
+                    ItemStack(material),
+                    player,
+                    true,
+                    EquipmentSlot.HAND
+                )
+                Bukkit.getPluginManager().callEvent(event)
+
+                if (event.isCancelled || !event.canBuild()) {
+                    player.sendFailed("Cannot solidify: Build permission denied.")
                     return@runAs
                 }
 
