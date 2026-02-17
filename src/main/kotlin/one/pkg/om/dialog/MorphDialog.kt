@@ -8,11 +8,33 @@
 
 package one.pkg.om.dialog
 
+import io.papermc.paper.registry.data.dialog.ActionButton
+import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.type.DialogType
+import net.kyori.adventure.text.Component
 
 class MorphDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        TODO("Not yet implemented")
+        val entityButton = ActionButton.builder(Component.text("Entity"))
+            .action(DialogAction.commandTemplate("/morph entity "))
+            .build()
+
+        val blockButton = ActionButton.builder(Component.text("Block"))
+            .action(DialogAction.commandTemplate("/morph block "))
+            .build()
+
+        val playerButton = ActionButton.builder(Component.text("Player"))
+            .action(DialogAction.commandTemplate("/morph player "))
+            .build()
+
+        builder.base(DialogBase.builder(Component.text("Morph Menu"))
+            .body(listOf(DialogBody.plainMessage(Component.text("Choose a category to morph into:"))))
+            .build())
+
+        builder.type(DialogType.multiAction(listOf(entityButton, blockButton, playerButton)).build())
     }
 
     override val key = "morph"
