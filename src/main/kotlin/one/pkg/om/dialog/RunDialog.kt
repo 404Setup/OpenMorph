@@ -8,12 +8,38 @@
 
 package one.pkg.om.dialog
 
+import io.papermc.paper.registry.data.dialog.ActionButton
+import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.type.DialogType
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
 
 @Suppress("UnstableApiUsage")
 class RunDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        TODO("Not yet implemented")
+        val base = DialogBase.builder(Component.text("Run Skill"))
+            .build()
+        builder.base(base)
+
+        val buttons = (1..9).map { id ->
+            ActionButton.create(
+                Component.text("Skill $id"),
+                null,
+                1,
+                DialogAction.staticAction(ClickEvent.runCommand("/om run $id"))
+            )
+        }
+
+        val closeButton = ActionButton.create(
+            Component.text("Close"),
+            null,
+            1,
+            null
+        )
+
+        builder.type(DialogType.multiAction(buttons, closeButton, 3))
     }
 
     override val key = "run"
