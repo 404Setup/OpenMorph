@@ -8,12 +8,30 @@
 
 package one.pkg.om.dialog
 
+import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.ActionButton
+import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.type.DialogType
+import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class UnMorphDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        TODO("Not yet implemented")
+        val base = DialogBase.builder(Component.text("Unmorph"))
+            .body(listOf(DialogBody.plainMessage(Component.text("Do you want to unmorph?"))))
+            .build()
+        builder.base(base)
+
+        val yesButton = ActionButton.builder(Component.text("Yes"))
+            .action(DialogAction.commandTemplate("om unmorph"))
+            .build()
+
+        val noButton = ActionButton.builder(Component.text("No"))
+            .build()
+
+        builder.type(DialogType.confirmation(yesButton, noButton))
     }
 
     override val key = "unmorph"
