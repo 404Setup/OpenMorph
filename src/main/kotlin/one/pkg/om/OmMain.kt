@@ -70,10 +70,6 @@ class OmMain : JavaPlugin() {
         runGlobalTaskTimer(12000L, 12000L) {
             OManager.saveAll()
         }
-
-        runGlobalTaskTimer(1L, 1L) {
-            OManager.playerMorph.values.forEach { it.tick() }
-        }
     }
 
     override fun onDisable() {
