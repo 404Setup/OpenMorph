@@ -17,6 +17,7 @@ import one.pkg.om.utils.isIt
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.sendFailed
 import org.bukkit.*
+import org.bukkit.block.BlockState
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Interaction
 import org.bukkit.event.block.BlockPlaceEvent
@@ -233,9 +234,13 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 }
 
                 // Security: Fire BlockPlaceEvent to check for build permissions and region protection
+                // Fix: Temporarily set block type so event.getBlock() reflects the new block
+                val replacedState = legs.state
+                legs.setType(material, false)
+
                 val event = BlockPlaceEvent(
                     legs,
-                    legs.state,
+                    replacedState,
                     ground,
                     ItemStack(material),
                     player,
@@ -245,13 +250,13 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 Bukkit.getPluginManager().callEvent(event)
 
                 if (event.isCancelled || !event.canBuild()) {
+                    replacedState.update(true, false) // Revert changes
                     player.sendFailed("Cannot solidify: Build permission denied.")
                     return@runAs
                 }
 
                 player.gameMode = GameMode.SPECTATOR
                 solidifiedLocation = legs.location
-                legs.setType(material, false)
                 isSolidified = true
                 removeDisplay()
                 OManager.playerMorph[player]?.offlineData?.setSolidifiedBlock(
