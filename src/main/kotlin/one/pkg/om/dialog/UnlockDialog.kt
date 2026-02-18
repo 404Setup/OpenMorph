@@ -8,12 +8,42 @@
 
 package one.pkg.om.dialog
 
+import io.papermc.paper.registry.data.dialog.ActionButton
+import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.input.DialogInput
+import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput
+import io.papermc.paper.registry.data.dialog.type.DialogType
+import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class UnlockDialog  : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        TODO("Not yet implemented")
+        val typeOptions = listOf(
+            SingleOptionDialogInput.OptionEntry.create("entity", Component.text("Entity"), true),
+            SingleOptionDialogInput.OptionEntry.create("block", Component.text("Block"), false),
+            SingleOptionDialogInput.OptionEntry.create("player", Component.text("Player"), false)
+        )
+
+        val inputs = listOf(
+            DialogInput.singleOption("type", Component.text("Type"), typeOptions).build(),
+            DialogInput.text("id", Component.text("Target ID/Name")).build()
+        )
+
+        val action = ActionButton.create(
+            Component.text("Unlock"),
+            Component.text("Unlock the selected morph"),
+            100,
+            DialogAction.commandTemplate("om unlock {type} {id}")
+        )
+
+        val base = DialogBase.builder(Component.text("Unlock Morph"))
+            .inputs(inputs)
+            .build()
+
+        builder.base(base)
+        builder.type(DialogType.multiAction(listOf(action)).build())
     }
 
     override val key = "unlock"
