@@ -29,12 +29,4 @@ data class OnlineMorphData(
     fun onAttack(event: EntityDamageByEntityEvent) {
         current?.onAttack(event)
     }
-
-    fun tick() {
-        current?.let {
-            offlineData.player().runAs { _ ->
-                it.tick()
-            }
-        }
-    }
 }

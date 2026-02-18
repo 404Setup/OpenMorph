@@ -43,6 +43,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private val scratchLocation = Location(player.world, 0.0, 0.0, 0.0)
 
     override fun start() {
+        super.start()
         isRunning = true
         spawnDisplay()
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
@@ -53,6 +54,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     }
 
     override fun stop(clearData: Boolean, stopServer: Boolean) {
+        super.stop(clearData, stopServer)
         isRunning = false
         if (isSolidified) {
             revertToDisplay()

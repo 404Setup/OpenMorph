@@ -44,6 +44,9 @@ fun Entity.runDelayed(retired: Runnable?, delayTicks: Long, task: Consumer<Sched
 fun Entity.runDelayed(delayTicks: Long, task: Consumer<ScheduledTask>) =
     runDelayed(null, delayTicks, task)
 
+fun Entity.runAtFixedRate(initialDelayTicks: Long, periodTicks: Long, task: Consumer<ScheduledTask>) =
+    this.scheduler.runAtFixedRate(getPlugin(), task, null, initialDelayTicks, periodTicks)
+
 fun Entity.runAs(retired: Runnable?, task: Consumer<ScheduledTask>) =
     this.scheduler.run(getPlugin(), task, retired)
 

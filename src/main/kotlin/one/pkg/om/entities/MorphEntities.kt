@@ -8,14 +8,29 @@
 
 package one.pkg.om.entities
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
+import one.pkg.om.utils.runAtFixedRate
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerMoveEvent
 
 abstract class MorphEntities(val player: Player) {
-    abstract fun start()
-    abstract fun stop(clearData: Boolean = true, stopServer: Boolean = false)
+    private var task: ScheduledTask? = null
+
+    open fun start() {
+        if (task == null || task!!.isCancelled) {
+            task = player.runAtFixedRate(1L, 1L) {
+                this.tick()
+            }
+        }
+    }
+
+    open fun stop(clearData: Boolean = true, stopServer: Boolean = false) {
+        task?.cancel()
+        task = null
+    }
+
     open fun onMove(event: PlayerMoveEvent) {}
     open fun onDamage(event: EntityDamageEvent) {}
     open fun onAttack(event: EntityDamageByEntityEvent) {}

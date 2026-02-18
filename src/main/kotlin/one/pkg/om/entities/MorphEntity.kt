@@ -39,6 +39,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     private val lastSkillUsage = mutableMapOf<Int, Long>()
 
     override fun start() {
+        super.start()
         cleanupGhosts()
         spawnDisguise()
 
@@ -139,6 +140,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     }
 
     override fun stop(clearData: Boolean, stopServer: Boolean) {
+        super.stop(clearData, stopServer)
         isStopped = true
         val data = OManager.playerMorph[player]
         data?.offlineData?.activeMorphEntityUuid?.let {
