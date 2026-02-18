@@ -147,19 +147,19 @@ data class SaveMorphData(
     }
 
     fun hasEntity(type: String): Boolean {
-        if (entities.contains("ALL")) return true
-        return entities.contains(type.uppercase())
+        if (entities.any { it.equals("ALL", ignoreCase = true) }) return true
+        return entities.any { it.equals(type, ignoreCase = true) }
     }
 
     fun addEntity(type: String): Boolean {
-        val et = type.lowercase()
-        if (et == "all") {
+        val et = type.uppercase()
+        if (et == "ALL") {
             entities.clear()
-            entities.add("all")
+            entities.add("ALL")
             markDirty()
             return true
         }
-        if (entities.contains("all")) return false
+        if (entities.any { it.equals("ALL", ignoreCase = true) }) return false
 
         if (!entities.contains(et)) {
             if (entities.size >= MAX_MORPHS) return false
@@ -194,6 +194,9 @@ data class SaveMorphData(
     }
 
     fun addPlayer(data: SavePlayerData): Boolean {
+        // Security: Limit skin data length to prevent storage exhaustion/DoS
+        if (data.skin.length > 20000) return false
+
         players.removeIf { it.name.equals(data.name, ignoreCase = true) || it.uuid == data.uuid }
         if (players.size >= MAX_MORPHS) return false
         players.add(data)
