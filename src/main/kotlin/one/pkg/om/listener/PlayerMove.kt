@@ -20,7 +20,7 @@ class PlayerMove : Listener {
     fun onPlayerMove(e: PlayerMoveEvent) {
         val from = e.from
         val to = e.to
-        if (from.isIt(to)) return
+        if (from.isIt(to) && from.yaw == to.yaw && from.pitch == to.pitch) return
 
         val data = OManager.playerMorph[e.player] ?: return
         data.onMove(e)
