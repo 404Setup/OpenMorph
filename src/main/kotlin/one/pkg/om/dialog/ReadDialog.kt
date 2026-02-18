@@ -8,12 +8,26 @@
 
 package one.pkg.om.dialog
 
+import io.papermc.paper.registry.data.dialog.ActionButton
+import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.type.DialogType
+import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class ReadDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        TODO("Not yet implemented")
+        val readButton = ActionButton.builder(Component.text("Unlock Block"))
+            .action(DialogAction.commandTemplate("/om read"))
+            .build()
+
+        builder.base(DialogBase.builder(Component.text("Read Morph"))
+            .body(listOf(DialogBody.plainMessage(Component.text("Hold a block in your main hand and click the button below to unlock its morph."))))
+            .build())
+
+        builder.type(DialogType.multiAction(listOf(readButton)).build())
     }
 
     override val key = "read"
