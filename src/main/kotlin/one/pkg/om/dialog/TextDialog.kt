@@ -8,12 +8,32 @@
 
 package one.pkg.om.dialog
 
+import io.papermc.paper.registry.data.dialog.ActionButton
+import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.input.DialogInput
+import io.papermc.paper.registry.data.dialog.type.DialogType
+import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class TextDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        TODO("Not yet implemented")
+        val base = DialogBase.builder(Component.text("Text Input"))
+            .inputs(listOf(
+                DialogInput.text("text_input", Component.text("Enter text")).build()
+            ))
+            .build()
+        builder.base(base)
+
+        val submit = ActionButton.builder(Component.text("Submit"))
+            .action(DialogAction.commandTemplate("say {text_input}"))
+            .build()
+
+        val close = ActionButton.builder(Component.text("Close"))
+            .build()
+
+        builder.type(DialogType.confirmation(submit, close))
     }
 
     override val key = "text"
