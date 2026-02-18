@@ -8,12 +8,26 @@
 
 package one.pkg.om.dialog
 
+import io.papermc.paper.registry.data.dialog.ActionButton
+import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.type.DialogType
+import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class GetDialog: IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        TODO("Not yet implemented")
+        val inspectButton = ActionButton.builder(Component.text("Inspect"))
+            .action(DialogAction.commandTemplate("/om get"))
+            .build()
+
+        builder.base(DialogBase.builder(Component.text("Get Info"))
+            .body(listOf(DialogBody.plainMessage(Component.text("Inspect the entity or block you are looking at."))))
+            .build())
+
+        builder.type(DialogType.multiAction(listOf(inspectButton)).build())
     }
 
     override val key = "get"
