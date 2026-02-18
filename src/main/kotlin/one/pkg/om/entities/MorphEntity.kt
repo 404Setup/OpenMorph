@@ -25,12 +25,15 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.loot.Lootable
 import org.bukkit.persistence.PersistentDataType
+import java.util.function.Predicate
 
 open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntities(player) {
     var disguisedEntity: Entity? = null
     private var lastSyncedLocation: Location? = null
     private var isStopped = false
     private var tickCounter = player.entityId
+
+    internal val hostilityPredicate = HostilityPredicate()
 
     open val hasKnockback: Boolean = true
     open val skills = mutableMapOf<Int, (Player) -> Unit>()
@@ -199,17 +202,10 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
         val currentTick = tickCounter++
 
         if (currentTick % 40 == 0) {
-            var count = 0
+            hostilityPredicate.reset()
             // Optimization: Limit collection size at source to avoid large allocations and iterations
             // when many mobs are nearby (e.g. mob farms).
-            player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0)) {
-                if (count >= 50) return@getNearbyEntities false
-                if (it is Mob && it.target == null && HostilityManager.shouldAttack(it.type, entityType)) {
-                    count++
-                    return@getNearbyEntities true
-                }
-                false
-            }.forEach { entity ->
+            player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0), hostilityPredicate).forEach { entity ->
                 (entity as Mob).target = player
             }
         }
@@ -281,6 +277,23 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
         if (skills.containsKey(id)) {
             skills[id]?.invoke(player)
             lastSkillUsage[id] = now
+        }
+    }
+
+    internal inner class HostilityPredicate : Predicate<Entity> {
+        var count = 0
+
+        fun reset() {
+            count = 0
+        }
+
+        override fun test(it: Entity): Boolean {
+            if (count >= 50) return false
+            if (it is Mob && it.target == null && HostilityManager.shouldAttack(it.type, entityType)) {
+                count++
+                return true
+            }
+            return false
         }
     }
 }
