@@ -86,7 +86,9 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
             if (idleTicks >= 120) {
                 trySolidify()
             }
-            syncLocation()
+            // Optimization: Remove redundant syncLocation() call.
+            // Location updates are handled by onMove with MONITOR priority,
+            // avoiding unnecessary player.getLocation() calls every tick when stationary.
         } else {
             val loc = solidifiedLocation ?: return
             if (loc.block.type != material) {
@@ -105,18 +107,28 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
             if (isSolidified) {
                 revertToDisplay()
             }
-            syncLocation()
+            syncLocation(to)
         } else {
             if (!isSolidified) {
-                syncLocation()
+                syncLocation(to)
             }
         }
     }
 
-    private fun syncLocation() {
+    private fun syncLocation(target: Location? = null) {
         if (!isSolidified) {
-            player.getLocation(scratchLocation)
-            scratchLocation.pitch = 0f
+            if (target != null) {
+                // Optimization: Reuse event location to avoid expensive player.getLocation() call
+                scratchLocation.world = target.world
+                scratchLocation.x = target.x
+                scratchLocation.y = target.y
+                scratchLocation.z = target.z
+                scratchLocation.yaw = target.yaw
+                scratchLocation.pitch = 0f
+            } else {
+                player.getLocation(scratchLocation)
+                scratchLocation.pitch = 0f
+            }
 
             val last = lastSyncedLocation
             if (last != null &&
