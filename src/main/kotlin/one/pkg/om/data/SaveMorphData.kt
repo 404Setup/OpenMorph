@@ -114,6 +114,9 @@ data class SaveMorphData(
     }
 
     fun addBlock(material: String): Boolean {
+        // Security: Limit block name length
+        if (material.length > 64) return false
+
         val mat = material.uppercase()
         if (mat == "all") {
             blocks.clear()
@@ -152,6 +155,9 @@ data class SaveMorphData(
     }
 
     fun addEntity(type: String): Boolean {
+        // Security: Limit entity type length
+        if (type.length > 64) return false
+
         val et = type.uppercase()
         if (et == "ALL") {
             entities.clear()
@@ -196,6 +202,8 @@ data class SaveMorphData(
     fun addPlayer(data: SavePlayerData): Boolean {
         // Security: Limit skin data length to prevent storage exhaustion/DoS
         if (data.skin.length > 20000) return false
+        // Security: Limit player name length (Minecraft max is 16)
+        if (data.name.length > 16) return false
 
         players.removeIf { it.name.equals(data.name, ignoreCase = true) || it.uuid == data.uuid }
         if (players.size >= MAX_MORPHS) return false

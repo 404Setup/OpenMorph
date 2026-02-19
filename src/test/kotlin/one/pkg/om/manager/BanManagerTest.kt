@@ -56,4 +56,15 @@ class BanManagerTest {
         BanManager.load()
         assertFalse(BanManager.isLocked("entity", "skeleton"), "Injected entry is active after reload")
     }
+
+    @Test
+    fun `test lock rejects excessively long ID`() {
+        val type = "block"
+        val longId = "A".repeat(2000)
+
+        // Should throw exception after fix
+        assertThrows(IllegalArgumentException::class.java) {
+            BanManager.lock(type, longId)
+        }
+    }
 }
