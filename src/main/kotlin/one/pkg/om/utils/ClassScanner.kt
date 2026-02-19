@@ -14,9 +14,12 @@ import java.util.jar.JarFile
 
 object ClassScanner {
     fun scanClasses(packageName: String): List<Class<*>> {
-        val plugin = OmMain.getInstance()
+        return scanClasses(packageName, OmMain.getInstance().javaClass)
+    }
+
+    fun scanClasses(packageName: String, context: Class<*>): List<Class<*>> {
         val classes = mutableListOf<Class<*>>()
-        val src = plugin.javaClass.protectionDomain.codeSource ?: return emptyList()
+        val src = context.protectionDomain.codeSource ?: return emptyList()
 
         val srcLoc = src.location
         val file = try {
@@ -27,7 +30,7 @@ object ClassScanner {
         }
 
         if (file.isDirectory) {
-            scanDir(file, packageName, classes)
+            scanDir(file, packageName, classes, context.classLoader, file)
         } else {
             JarFile(file).use { jar ->
                 val entries = jar.entries()
@@ -38,7 +41,7 @@ object ClassScanner {
                         val className = name.replace("/", ".").substring(0, name.length - 6)
                         if (className.startsWith(packageName)) {
                             try {
-                                classes.add(Class.forName(className, false, plugin.javaClass.classLoader))
+                                classes.add(Class.forName(className, false, context.classLoader))
                             } catch (_: Throwable) {
                             }
                         }
@@ -49,16 +52,16 @@ object ClassScanner {
         return classes
     }
 
-    private fun scanDir(dir: File, packageName: String, classes: MutableList<Class<*>>) {
+    private fun scanDir(dir: File, packageName: String, classes: MutableList<Class<*>>, classLoader: ClassLoader, rootFile: File) {
         val files = dir.listFiles() ?: return
         for (file in files) {
             if (file.isDirectory) {
-                scanDir(file, packageName, classes)
+                scanDir(file, packageName, classes, classLoader, rootFile)
             } else if (file.name.endsWith(".class")) {
-                val className = getClassNameFromFile(file)
+                val className = getClassNameFromFile(file, rootFile)
                 if (className != null && className.startsWith(packageName)) {
                     try {
-                        classes.add(Class.forName(className, false, OmMain.getInstance().javaClass.classLoader))
+                        classes.add(Class.forName(className, false, classLoader))
                     } catch (_: Throwable) {
                     }
                 }
@@ -66,17 +69,7 @@ object ClassScanner {
         }
     }
 
-    private fun getClassNameFromFile(classFile: File): String? {
-        val plugin = OmMain.getInstance()
-        val src = plugin.javaClass.protectionDomain.codeSource ?: return null
-        val srcLoc = src.location
-        val rootFile = try {
-            File(srcLoc.toURI())
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
-
+    private fun getClassNameFromFile(classFile: File, rootFile: File): String? {
         val relativePath = classFile.absolutePath.removePrefix(rootFile.absolutePath)
             .removePrefix(File.separator)
             .replace(File.separator, ".")
