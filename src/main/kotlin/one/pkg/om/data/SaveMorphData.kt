@@ -277,6 +277,13 @@ data class SaveMorphData(
         fun create(player: Player) =
             create(player.uniqueId)
 
+        private val cachedMigrators: List<DataMigrator> by lazy {
+            ClassScanner.scanClasses("one.pkg.om.data")
+                .filter { it.isAnnotationPresent(OMData::class.java) && DataMigrator::class.java.isAssignableFrom(it) }
+                .map { it.getDeclaredConstructor().newInstance() as DataMigrator }
+                .sortedByDescending { it.javaClass.getAnnotation(OMData::class.java).version }
+        }
+
         fun create(player: UUID): SaveMorphData {
             val file = (saveDir / "$player.dat")
             if (!file.exists()) {
@@ -291,10 +298,7 @@ data class SaveMorphData(
                     }
                 }
             } catch (e: Exception) {
-                val migrators = ClassScanner.scanClasses("one.pkg.om.data")
-                    .filter { it.isAnnotationPresent(OMData::class.java) && DataMigrator::class.java.isAssignableFrom(it) }
-                    .map { it.getDeclaredConstructor().newInstance() as DataMigrator }
-                    .sortedByDescending { it.javaClass.getAnnotation(OMData::class.java).version }
+                val migrators = cachedMigrators
 
                 val errors = mutableListOf<String>()
                 errors.add("Current=${e.message}")
