@@ -46,4 +46,31 @@ class SaveMorphDataSecurityTest {
         assertTrue(validResult, "Should accept valid skin data length")
         assertEquals(1, data.players.size, "Player should be added")
     }
+
+    @Test
+    fun testLimitsInputLength() {
+        val uuid = UUID.randomUUID()
+        val data = SaveMorphData(uuid, ArrayList(), ArrayList(), ArrayList())
+
+        // Test Block limit (64)
+        val longBlock = "A".repeat(65)
+        assertFalse(data.addBlock(longBlock), "Should reject block name > 64 chars")
+
+        val validBlock = "A".repeat(64)
+        assertTrue(data.addBlock(validBlock), "Should accept block name <= 64 chars")
+
+        // Test Entity limit (64)
+        val longEntity = "A".repeat(65)
+        assertFalse(data.addEntity(longEntity), "Should reject entity type > 64 chars")
+
+        val validEntity = "A".repeat(64)
+        assertTrue(data.addEntity(validEntity), "Should accept entity type <= 64 chars")
+
+        // Test Player Name limit (16)
+        val longPlayerName = "A".repeat(17)
+        assertFalse(data.addPlayer(SavePlayerData(UUID.randomUUID(), longPlayerName, "")), "Should reject player name > 16 chars")
+
+        val validPlayerName = "A".repeat(16)
+        assertTrue(data.addPlayer(SavePlayerData(UUID.randomUUID(), validPlayerName, "")), "Should accept player name <= 16 chars")
+    }
 }

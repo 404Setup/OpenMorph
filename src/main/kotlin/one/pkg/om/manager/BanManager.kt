@@ -35,6 +35,7 @@ object BanManager {
         }
     }
 
+    @Synchronized
     fun save() {
         try {
             // Security: Use atomic write to prevent data corruption/loss on crash
@@ -56,12 +57,14 @@ object BanManager {
         return lockedMorphs.contains("${type.lowercase()}:${id.lowercase()}")
     }
 
+    @Synchronized
     fun lock(type: String, id: String) {
         validateInput(type, id)
         lockedMorphs.add("${type.lowercase()}:${id.lowercase()}")
         save()
     }
 
+    @Synchronized
     fun unlock(type: String, id: String) {
         validateInput(type, id)
         lockedMorphs.remove("${type.lowercase()}:${id.lowercase()}")
@@ -72,6 +75,9 @@ object BanManager {
         if (type.contains("\n") || id.contains("\n") || type.contains("\r") || id.contains("\r")) {
             throw IllegalArgumentException("Type and ID cannot contain newline characters")
         }
+        // Security: Limit input length to prevent DoS/OOM
+        if (type.length > 32) throw IllegalArgumentException("Type too long (max 32)")
+        if (id.length > 128) throw IllegalArgumentException("ID too long (max 128)")
     }
 
     fun getLockedIds(type: String): List<String> {
