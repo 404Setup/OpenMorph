@@ -8,7 +8,6 @@
 
 package one.pkg.om.entities
 
-import one.pkg.om.OmMain
 import one.pkg.om.manager.BlockPosition
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.OmKeys
@@ -49,9 +48,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
         spawnDisplay()
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
 
-        Bukkit.getOnlinePlayers().forEach {
-            if (it != player) it.hideEntity(OmMain.getInstance(), player)
-        }
+        setSelfVisible(false)
     }
 
     override fun stop(clearData: Boolean, stopServer: Boolean) {
@@ -74,9 +71,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
         removeDisplay()
         player.removePotionEffect(PotionEffectType.INVISIBILITY)
 
-        Bukkit.getOnlinePlayers().forEach {
-            if (it != player) it.showEntity(OmMain.getInstance(), player)
-        }
+        setSelfVisible(true)
     }
 
     override fun tick() {

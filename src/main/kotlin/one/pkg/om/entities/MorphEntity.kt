@@ -50,9 +50,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             player.getAttribute(Attribute.KNOCKBACK_RESISTANCE)?.baseValue = 1.0
         }
 
-        Bukkit.getOnlinePlayers().forEach {
-            if (it != player) it.hideEntity(OmMain.getInstance(), player)
-        }
+        setSelfVisible(false)
     }
 
     fun isEnemy(): Boolean {
@@ -156,9 +154,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
         cleanupGhosts()
 
-        Bukkit.getOnlinePlayers().forEach {
-            if (it != player) it.showEntity(OmMain.getInstance(), player)
-        }
+        setSelfVisible(true)
 
         player.sendHealthUpdate()
         player.scheduleResetHealth(stopServer = stopServer)
