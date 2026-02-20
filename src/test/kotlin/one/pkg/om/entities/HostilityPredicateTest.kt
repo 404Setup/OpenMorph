@@ -40,12 +40,17 @@ class HostilityPredicateTest {
         val predicate = morphEntity.hostilityPredicate
 
         // Mock Aggressor Mob (WARDEN)
+        var targetSetCount = 0
         val warden = Proxy.newProxyInstance(
             Mob::class.java.classLoader,
             arrayOf(Mob::class.java)
         ) { _, method, _ ->
             if (method.name == "getType") return@newProxyInstance EntityType.WARDEN
             if (method.name == "getTarget") return@newProxyInstance null
+            if (method.name == "setTarget") {
+                targetSetCount++
+                return@newProxyInstance null
+            }
             if (method.name == "toString") return@newProxyInstance "MockWarden"
             // HostilityManager checks type
             null
@@ -53,17 +58,21 @@ class HostilityPredicateTest {
 
         // Test Limit
         for (i in 1..50) {
-            assertTrue(predicate.test(warden), "Predicate should return true for count $i")
+            // Predicate now returns false (side-effect optimization) but performs the action
+            assertFalse(predicate.test(warden), "Predicate should return false (side-effect optimization) for count $i")
+            assertEquals(i, targetSetCount, "Target should have been set $i times")
         }
 
-        // 51st time should return false
+        // 51st time should return false and NOT set target
         assertFalse(predicate.test(warden), "Predicate should return false after 50 matches")
+        assertEquals(50, targetSetCount, "Target should not have been set for 51st call")
 
         // Reset
         predicate.reset()
 
-        // Should be true again
-        assertTrue(predicate.test(warden), "Predicate should return true after reset")
+        // Should work again
+        assertFalse(predicate.test(warden), "Predicate should return false (side-effect) after reset")
+        assertEquals(51, targetSetCount, "Target should have been set again after reset")
     }
 
     @Test
