@@ -13,8 +13,6 @@ import com.destroystokyo.paper.profile.ProfileProperty
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
-import one.pkg.om.OmMain
-
 class MorphPlayer(player: Player, val targetName: String, val skinValue: String?, val skinSignature: String?) : MorphEntities(player) {
     private var originalProfile: PlayerProfile? = null
 
@@ -27,22 +25,13 @@ class MorphPlayer(player: Player, val targetName: String, val skinValue: String?
         }
         
         player.playerProfile = newProfile
-        refreshPlayer()
+        refreshSelfVisibility()
     }
 
     override fun stop(clearData: Boolean, stopServer: Boolean) {
         if (originalProfile != null) {
             player.playerProfile = originalProfile!!
         }
-        refreshPlayer()
-    }
-    
-    private fun refreshPlayer() {
-        Bukkit.getOnlinePlayers().forEach { 
-             if (it != player) {
-                 it.hidePlayer(OmMain.getInstance(), player)
-                 it.showPlayer(OmMain.getInstance(), player)
-             }
-        }
+        refreshSelfVisibility()
     }
 }

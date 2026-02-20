@@ -9,7 +9,9 @@
 package one.pkg.om.entities
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
+import one.pkg.om.OmMain
 import one.pkg.om.utils.runAtFixedRate
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
@@ -17,6 +19,29 @@ import org.bukkit.event.player.PlayerMoveEvent
 
 abstract class MorphEntities(val player: Player) {
     private var task: ScheduledTask? = null
+
+    protected fun setSelfVisible(visible: Boolean) {
+        val plugin = OmMain.getInstance()
+        Bukkit.getOnlinePlayers().forEach { other ->
+            if (other != player) {
+                if (visible) {
+                    other.showEntity(plugin, player)
+                } else {
+                    other.hideEntity(plugin, player)
+                }
+            }
+        }
+    }
+
+    protected fun refreshSelfVisibility() {
+        val plugin = OmMain.getInstance()
+        Bukkit.getOnlinePlayers().forEach { other ->
+            if (other != player) {
+                other.hideEntity(plugin, player)
+                other.showEntity(plugin, player)
+            }
+        }
+    }
 
     open fun start() {
         if (task == null || task!!.isCancelled) {
