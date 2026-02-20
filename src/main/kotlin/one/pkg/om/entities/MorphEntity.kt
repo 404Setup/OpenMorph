@@ -61,23 +61,14 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     }
 
     private fun cleanupGhosts() {
-        player.getNearbyEntities(10.0, 10.0, 10.0).forEach { e ->
-            if (e.persistentDataContainer.has(
-                    OmKeys.OWNER_KEY,
-                    PersistentDataType.STRING
-                )
-            ) {
-                val uuidStr = e.persistentDataContainer.get(
-                    OmKeys.OWNER_KEY,
-                    PersistentDataType.STRING
-                )
-                if (uuidStr == player.uniqueId.toString()) {
-                    if (e != disguisedEntity) {
-                        e.remove()
-                    }
-                }
+        player.world.getNearbyEntities(player.boundingBox.expand(10.0, 10.0, 10.0)) { e ->
+            if (e.persistentDataContainer.has(OmKeys.OWNER_KEY, PersistentDataType.STRING)) {
+                val uuidStr = e.persistentDataContainer.get(OmKeys.OWNER_KEY, PersistentDataType.STRING)
+                uuidStr == player.uniqueId.toString() && e != disguisedEntity
+            } else {
+                false
             }
-        }
+        }.forEach { it.remove() }
     }
 
     private fun spawnDisguise() {
@@ -205,9 +196,8 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             hostilityPredicate.reset()
             // Optimization: Limit collection size at source to avoid large allocations and iterations
             // when many mobs are nearby (e.g. mob farms).
-            player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0), hostilityPredicate).forEach { entity ->
-                (entity as Mob).target = player
-            }
+            // Logic is handled inside the predicate (side-effect) to avoid allocating a result list.
+            player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0), hostilityPredicate)
         }
 
         // Throttle tick execution if there are no passive skills to run.
@@ -248,7 +238,9 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
         }
 
         if (passiveSkills.isNotEmpty()) {
-            passiveSkills.forEach { it.invoke() }
+            for (i in passiveSkills.indices) {
+                passiveSkills[i].invoke()
+            }
         }
     }
 
@@ -291,7 +283,8 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             if (count >= 50) return false
             if (it is Mob && it.target == null && HostilityManager.shouldAttack(it.type, entityType)) {
                 count++
-                return true
+                it.target = player
+                return false
             }
             return false
         }
