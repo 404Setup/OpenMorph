@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
 data class BlockPosition(val world: String, val x: Int, val y: Int, val z: Int)
 
 object OManager {
-    val playerMorph = linkedMapOf<Player, OnlineMorphData>()
+    val playerMorph = ConcurrentHashMap<Player, OnlineMorphData>()
     val blockMorphs = ConcurrentHashMap<BlockPosition, Player>()
     val entityToPlayerMap = ConcurrentHashMap<UUID, Player>()
     val pendingRespawnResets: ConcurrentHashMap.KeySetView<UUID?, Boolean> = ConcurrentHashMap.newKeySet<UUID>()
