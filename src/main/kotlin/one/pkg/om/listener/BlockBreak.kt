@@ -9,6 +9,7 @@
 package one.pkg.om.listener
 
 import one.pkg.om.entities.MorphBlock
+import one.pkg.om.manager.BlockPosition
 import one.pkg.om.manager.OManager
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -18,14 +19,18 @@ class BlockBreak : Listener {
     @EventHandler
     fun onBreak(e: BlockBreakEvent) {
         val loc = e.block.location
-        OManager.playerMorph.forEach { (player, data) ->
-             val current = data.current
-             if (current is MorphBlock) {
-                 if (current.isAt(loc)) {
-                     current.onDamage()
-                     player.damage(5.0)
-                     e.isDropItems = false
-                 }
+        // Optimization: Use O(1) lookup map instead of iterating all morphed players (O(N))
+        val pos = BlockPosition(e.block.world.name, loc.blockX, loc.blockY, loc.blockZ)
+
+        val player = OManager.blockMorphs[pos] ?: return
+        val data = OManager.playerMorph[player] ?: return
+
+        val current = data.current
+        if (current is MorphBlock) {
+             if (current.isAt(loc)) {
+                 current.onDamage()
+                 player.damage(5.0)
+                 e.isDropItems = false
              }
         }
     }
