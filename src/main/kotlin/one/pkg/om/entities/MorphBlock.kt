@@ -245,21 +245,30 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 val replacedState = legs.state
                 legs.setType(material, false)
 
-                val event = BlockPlaceEvent(
-                    legs,
-                    replacedState,
-                    ground,
-                    ItemStack(material),
-                    player,
-                    true,
-                    EquipmentSlot.HAND
-                )
-                Bukkit.getPluginManager().callEvent(event)
+                var success = false
+                try {
+                    val event = BlockPlaceEvent(
+                        legs,
+                        replacedState,
+                        ground,
+                        ItemStack(material),
+                        player,
+                        true,
+                        EquipmentSlot.HAND
+                    )
+                    Bukkit.getPluginManager().callEvent(event)
 
-                if (event.isCancelled || !event.canBuild()) {
-                    replacedState.update(true, false) // Revert changes
-                    player.sendFailed("Cannot solidify: Build permission denied.")
-                    return@runAs
+                    if (!event.isCancelled && event.canBuild()) {
+                        success = true
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    if (!success) {
+                        replacedState.update(true, false) // Revert changes
+                        player.sendFailed("Cannot solidify: Build permission denied.")
+                        return@runAs
+                    }
                 }
 
                 player.gameMode = GameMode.SPECTATOR
