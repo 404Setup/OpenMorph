@@ -16,6 +16,7 @@ import one.pkg.om.utils.isIt
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.sendFailed
 import org.bukkit.*
+import org.bukkit.block.BlockFace
 import org.bukkit.block.BlockState
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Interaction
@@ -78,7 +79,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
         if (!isRunning) return
         if (!isSolidified) {
             idleTicks++
-            if (idleTicks >= 120) {
+            if (idleTicks >= 120 && idleTicks % 20 == 0) {
                 trySolidify()
             }
             // Optimization: Remove redundant syncLocation() call.
@@ -209,8 +210,10 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private fun trySolidify() {
         if (isSolidified || !isRunning) return
 
-        val legs = player.location.block
-        val ground = player.location.clone().subtract(0.0, 1.0, 0.0).block
+        // Optimization: Reuse scratchLocation to avoid allocating new Location objects
+        player.getLocation(scratchLocation)
+        val legs = scratchLocation.block
+        val ground = legs.getRelative(BlockFace.DOWN)
 
         if (!player.hasPermission("om.morph.block.bypass_ground_check")) {
             if (ground.type.isAir) return
@@ -218,9 +221,9 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
 
         if (!legs.isReplaceable) return
 
-        val centerLoc = legs.location.clone().add(0.5, 0.0, 0.5)
-        centerLoc.yaw = player.location.yaw
-        centerLoc.pitch = player.location.pitch
+        val centerLoc = legs.location.add(0.5, 0.0, 0.5)
+        centerLoc.yaw = scratchLocation.yaw
+        centerLoc.pitch = scratchLocation.pitch
 
         if (previousGameMode == null) {
             previousGameMode = player.gameMode
