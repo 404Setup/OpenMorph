@@ -41,6 +41,10 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     open val skillCooldowns = mutableMapOf<Int, Long>()
     private val lastSkillUsage = mutableMapOf<Int, Long>()
 
+    override fun getTickPeriod(): Long {
+        return if (passiveSkills.isEmpty()) 5L else 1L
+    }
+
     override fun start() {
         super.start()
         cleanupGhosts()
@@ -186,9 +190,11 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     override fun tick() {
         if (isStopped) return
 
+        val period = getTickPeriod().toInt()
         val currentTick = tickCounter++
 
-        if (currentTick % 40 == 0) {
+        val hostilityDivisor = 40 / period
+        if (currentTick % hostilityDivisor == 0) {
             hostilityPredicate.reset()
             // Optimization: Limit collection size at source to avoid large allocations and iterations
             // when many mobs are nearby (e.g. mob farms).
@@ -200,7 +206,8 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
         // Location sync is handled by PlayerMoveEvent, so this only affects
         // health/pose sync and disguise respawn, which don't need 20Hz updates.
         // This reduces scheduler overhead by 80%.
-        if (passiveSkills.isEmpty() && currentTick % 5 != 0) return
+        val syncDivisor = 5 / period
+        if (passiveSkills.isEmpty() && currentTick % syncDivisor != 0) return
 
         if (disguisedEntity == null || !disguisedEntity!!.isValid) {
             spawnDisguise()

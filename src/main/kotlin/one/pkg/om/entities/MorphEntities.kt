@@ -20,6 +20,8 @@ import org.bukkit.event.player.PlayerMoveEvent
 abstract class MorphEntities(val player: Player) {
     private var task: ScheduledTask? = null
 
+    protected open fun getTickPeriod(): Long = 1L
+
     protected fun setSelfVisible(visible: Boolean) {
         val plugin = OmMain.getInstance()
         Bukkit.getOnlinePlayers().forEach { other ->
@@ -45,7 +47,8 @@ abstract class MorphEntities(val player: Player) {
 
     open fun start() {
         if (task == null || task!!.isCancelled) {
-            task = player.runAtFixedRate(1L, 1L) {
+            val period = getTickPeriod()
+            task = player.runAtFixedRate(1L, period) {
                 this.tick()
             }
         }
