@@ -73,4 +73,21 @@ class SaveMorphDataSecurityTest {
         val validPlayerName = "A".repeat(16)
         assertTrue(data.addPlayer(SavePlayerData(UUID.randomUUID(), validPlayerName, "")), "Should accept player name <= 16 chars")
     }
+
+    @Test
+    fun testActiveMorphLengthLimit() {
+        val uuid = UUID.randomUUID()
+        val data = SaveMorphData(uuid, ArrayList(), ArrayList(), ArrayList())
+
+        val longName = "A".repeat(1000)
+        data.setActiveMorph("PLAYER", longName, null, null)
+
+        // Expectation: Should NOT be set due to length limit
+        // Currently this will fail (it will be set)
+        assertEquals(null, data.activeMorphName, "Should reject active morph name > 16 chars for PLAYER")
+
+        val validName = "ValidPlayer"
+        data.setActiveMorph("PLAYER", validName, null, null)
+        assertEquals(validName, data.activeMorphName, "Should accept valid active morph name")
+    }
 }

@@ -60,6 +60,14 @@ data class SaveMorphData(
     }
 
     fun setActiveMorph(type: String, name: String, skin: String? = null, signature: String? = null) {
+        // Security: Limit inputs to prevent storage exhaustion or DoS
+        if (type.length > 32) return
+        if (name.length > 64) return
+        if (type.equals("PLAYER", ignoreCase = true) && name.length > 16) return
+
+        if (skin != null && skin.length > 20000) return
+        if (signature != null && signature.length > 5000) return
+
         this.activeMorphType = type
         this.activeMorphName = name
         this.activeMorphSkin = skin
