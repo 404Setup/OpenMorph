@@ -38,8 +38,8 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private var solidifiedLocation: Location? = null
     private var previousGameMode: GameMode? = null
     private var isRunning = false
-    // Optimization: Track last synced location to avoid redundant teleport packets
-    private var lastSyncedLocation: Location? = null
+    // Optimization: Reuse Location object to avoid allocations in tick loop
+    private val lastSyncedLocation = Location(player.world, 0.0, 0.0, 0.0)
     // Reuse location object to avoid allocations in tick loop
     private val scratchLocation = Location(player.world, 0.0, 0.0, 0.0)
 
@@ -126,20 +126,26 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 scratchLocation.pitch = 0f
             }
 
-            val last = lastSyncedLocation
-            if (last != null &&
-                last.world == scratchLocation.world &&
-                last.x == scratchLocation.x &&
-                last.y == scratchLocation.y &&
-                last.z == scratchLocation.z &&
-                last.yaw == scratchLocation.yaw &&
-                last.pitch == scratchLocation.pitch
+            // Check if update is needed (compare with last synced state)
+            if (lastSyncedLocation.world == scratchLocation.world &&
+                lastSyncedLocation.x == scratchLocation.x &&
+                lastSyncedLocation.y == scratchLocation.y &&
+                lastSyncedLocation.z == scratchLocation.z &&
+                lastSyncedLocation.yaw == scratchLocation.yaw &&
+                lastSyncedLocation.pitch == scratchLocation.pitch
             ) return
 
-            val loc = scratchLocation.clone()
-            displayEntity?.teleportAsync(loc)
-            interactionEntity?.teleportAsync(loc)
-            lastSyncedLocation = loc
+            // Update cached state
+            lastSyncedLocation.world = scratchLocation.world
+            lastSyncedLocation.x = scratchLocation.x
+            lastSyncedLocation.y = scratchLocation.y
+            lastSyncedLocation.z = scratchLocation.z
+            lastSyncedLocation.yaw = scratchLocation.yaw
+            lastSyncedLocation.pitch = scratchLocation.pitch
+
+            // Use the updated cached object for teleportAsync (safe because teleportAsync copies)
+            displayEntity?.teleportAsync(lastSyncedLocation)
+            interactionEntity?.teleportAsync(lastSyncedLocation)
         }
     }
 
