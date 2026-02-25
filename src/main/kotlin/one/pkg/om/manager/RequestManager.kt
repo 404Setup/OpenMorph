@@ -26,6 +26,7 @@ object RequestManager {
 
     fun cleanup(player: Player) {
         requests.remove(player.uniqueId)
+        requests.values.forEach { it.remove(player.uniqueId) }
         cooldowns.remove(player.uniqueId)
     }
 

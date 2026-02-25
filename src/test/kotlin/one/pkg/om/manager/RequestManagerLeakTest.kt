@@ -213,4 +213,21 @@ class RequestManagerLeakTest {
         @Suppress("UNCHECKED_CAST")
         return field.get(RequestManager) as Map<UUID, ConcurrentHashMap<UUID, Long>>
     }
+
+    @Test
+    fun `test request cleanup on sender disconnect`() {
+        RequestManager.sendRequest(sender, receiver)
+        val requestsMap = getRequestsMap()
+        val receiverRequests = requestsMap[receiver.uniqueId]
+
+        // Confirm request exists
+        assertNotNull(receiverRequests)
+        assertTrue(receiverRequests!!.containsKey(sender.uniqueId))
+
+        // Cleanup sender
+        RequestManager.cleanup(sender)
+
+        // Confirm request is gone
+        assertNull(receiverRequests[sender.uniqueId], "Sender request should be removed from receiver's map after sender cleanup")
+    }
 }
