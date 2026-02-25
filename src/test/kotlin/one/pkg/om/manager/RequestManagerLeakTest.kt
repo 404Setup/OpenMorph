@@ -8,21 +8,23 @@ import org.bukkit.Server
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
+import java.lang.reflect.Field
 import java.lang.reflect.Proxy
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import com.destroystokyo.paper.profile.PlayerProfile
 import com.destroystokyo.paper.profile.ProfileProperty
+import java.util.function.Consumer
 
-class RequestManagerTest {
+class RequestManagerLeakTest {
 
     private lateinit var mockServer: Server
     private lateinit var mockPlugin: Plugin
@@ -30,13 +32,16 @@ class RequestManagerTest {
     private lateinit var tempDir: File
     private lateinit var sender: Player
     private lateinit var receiver: Player
+    private lateinit var scheduledTasks: MutableList<Consumer<ScheduledTask>>
 
     @BeforeEach
     fun setup() {
-        tempDir = File.createTempFile("om_test_save", "")
+        tempDir = File.createTempFile("om_test_leak", "")
         tempDir.delete()
         tempDir.mkdirs()
         SaveMorphData.customSaveDir = tempDir
+
+        scheduledTasks = mutableListOf()
 
         // Mock Plugin
         mockPlugin = Proxy.newProxyInstance(
@@ -51,7 +56,11 @@ class RequestManagerTest {
             arrayOf(GlobalRegionScheduler::class.java)
         ) { _, method, args ->
             if (method.name == "runDelayed") {
-                // Return dummy task
+                // Store task for manual execution
+                if (args.size >= 3 && args[1] is Consumer<*>) {
+                    @Suppress("UNCHECKED_CAST")
+                    scheduledTasks.add(args[1] as Consumer<ScheduledTask>)
+                }
                 return@newProxyInstance Proxy.newProxyInstance(
                     ScheduledTask::class.java.classLoader,
                     arrayOf(ScheduledTask::class.java)
@@ -63,14 +72,13 @@ class RequestManagerTest {
         val senderUuid = UUID.fromString("00000000-0000-0000-0000-000000000001")
         val receiverUuid = UUID.fromString("00000000-0000-0000-0000-000000000002")
         sender = createMockPlayer("Sender", senderUuid)
-        receiver = createMockPlayer("Receiver", receiverUuid, "the_skin_value", "the_skin_signature")
+        receiver = createMockPlayer("Receiver", receiverUuid)
 
         // Mock Server
         mockServer = Proxy.newProxyInstance(
             Server::class.java.classLoader,
             arrayOf(Server::class.java)
         ) { _, method, args ->
-            // println("Server method called: ${method.name}")
             when (method.name) {
                 "getGlobalRegionScheduler" -> mockScheduler
                 "getPlayer" -> {
@@ -80,6 +88,11 @@ class RequestManagerTest {
                         val name = arg
                         if (name == "Sender") return@newProxyInstance sender
                         if (name == "Receiver") return@newProxyInstance receiver
+                    }
+                    if (arg is UUID) {
+                        val uuid = arg
+                        if (uuid == senderUuid) return@newProxyInstance sender
+                        if (uuid == receiverUuid) return@newProxyInstance receiver
                     }
                     null
                 }
@@ -106,32 +119,21 @@ class RequestManagerTest {
 
     @AfterEach
     fun tearDown() {
-        // Reset Bukkit server to avoid polluting other tests
         val serverField = Bukkit::class.java.getDeclaredField("server")
         serverField.isAccessible = true
         serverField.set(null, null)
-
-        // Reset plugin instance
         testPluginInstance = null
-
-        // Clean up temp dir
         tempDir.deleteRecursively()
     }
 
-    private fun createMockPlayer(name: String, uuid: UUID, skinVal: String? = null, skinSig: String? = null): Player {
+    private fun createMockPlayer(name: String, uuid: UUID): Player {
         val mockProfile = Proxy.newProxyInstance(
             PlayerProfile::class.java.classLoader,
             arrayOf(PlayerProfile::class.java)
         ) { _, method, args ->
-            if (method.name == "getProperties") {
-                val props = LinkedHashSet<ProfileProperty>()
-                if (skinVal != null) {
-                    props.add(ProfileProperty("textures", skinVal, skinSig))
-                }
-                return@newProxyInstance props
-            }
-             if (method.name == "getId") return@newProxyInstance uuid
-             if (method.name == "getName") return@newProxyInstance name
+            if (method.name == "getProperties") return@newProxyInstance LinkedHashSet<ProfileProperty>()
+            if (method.name == "getId") return@newProxyInstance uuid
+            if (method.name == "getName") return@newProxyInstance name
             null
         } as PlayerProfile
 
@@ -143,12 +145,11 @@ class RequestManagerTest {
                 "getName" -> name
                 "getUniqueId" -> uuid
                 "getPlayerProfile" -> mockProfile
-                "sendMessage" -> null // Ignore
+                "sendMessage" -> null
                 "isOnline" -> true
                 "hashCode" -> uuid.hashCode()
                 "equals" -> {
                     val other = args[0]
-                    // Simple reference check since we reuse instances
                     return@newProxyInstance other === proxy
                 }
                 else -> null
@@ -157,27 +158,59 @@ class RequestManagerTest {
     }
 
     @Test
-    fun `test acceptRequest preserves skin signature`() {
-        // Populate OManager
-        val senderData = SaveMorphData.empty(sender)
-        OManager.playerMorph[sender] = OnlineMorphData(null, senderData)
-
+    fun `test request map leak on deny`() {
         // Send request
         RequestManager.sendRequest(sender, receiver)
 
-        // Accept request
+        // Verify map has entry for receiver
+        val requestsMap = getRequestsMap()
+        assertTrue(requestsMap.containsKey(receiver.uniqueId), "Map should contain receiver UUID")
+
+        // Deny request
+        RequestManager.denyRequest(receiver, "Sender")
+
+        // Check if map still contains receiver UUID
+        // Current behavior: It does. Fixed behavior: It should NOT.
+
+        // This assertion will fail BEFORE the fix, demonstrating the leak.
+        assertNull(requestsMap[receiver.uniqueId], "Map should NOT contain receiver UUID after deny (Memory Leak Fix)")
+    }
+
+    @Test
+    fun `test request map leak on accept`() {
+        // Populate OManager for sender
+        val senderData = SaveMorphData.empty(sender)
+        OManager.playerMorph[sender] = OnlineMorphData(null, senderData)
+
+        RequestManager.sendRequest(sender, receiver)
+        val requestsMap = getRequestsMap()
+        assertTrue(requestsMap.containsKey(receiver.uniqueId))
+
         RequestManager.acceptRequest(receiver, "Sender")
 
-        // Verify data
-        val savedPlayer = senderData.players.find { it.name == "Receiver" }
-        if (savedPlayer == null) {
-            fail<Unit>("Receiver was not added to sender's morph list")
-        }
+        assertNull(requestsMap[receiver.uniqueId], "Map should NOT contain receiver UUID after accept")
+    }
 
-        // Assert failure first (Current behavior)
-        // assertEquals("the_skin_value", savedPlayer!!.skin, "Bug reproduction: Skin signature is missing")
+    @Test
+    fun `test request map leak on timeout`() {
+        RequestManager.sendRequest(sender, receiver)
+        val requestsMap = getRequestsMap()
+        assertTrue(requestsMap.containsKey(receiver.uniqueId))
 
-        // Assert correct behavior (Goal)
-        assertEquals("the_skin_value;the_skin_signature", savedPlayer!!.skin, "Skin signature should be preserved")
+        // Execute scheduled tasks (timeout)
+        val mockTask = Proxy.newProxyInstance(
+            ScheduledTask::class.java.classLoader,
+            arrayOf(ScheduledTask::class.java)
+        ) { _, _, _ -> null } as ScheduledTask
+        scheduledTasks.forEach { it.accept(mockTask) }
+
+        assertNull(requestsMap[receiver.uniqueId], "Map should NOT contain receiver UUID after timeout")
+    }
+
+    private fun getRequestsMap(): Map<UUID, ConcurrentHashMap<UUID, Long>> {
+        val field = RequestManager::class.java.getDeclaredField("requests")
+        field.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        return field.get(RequestManager) as Map<UUID, ConcurrentHashMap<UUID, Long>>
     }
 }
