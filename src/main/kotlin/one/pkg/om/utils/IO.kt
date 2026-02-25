@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 
 internal var testPluginInstance: Plugin? = null
-private fun getPlugin(): Plugin = testPluginInstance ?: OmMain.getInstance()
+fun getPlugin(): Plugin = testPluginInstance ?: OmMain.getInstance()
 
 operator fun File.div(other: String): File = this.resolve(other)
 
