@@ -64,7 +64,13 @@ class DropCommand : SubCommand {
         val targetName = targetPlayer.name
 
         if (!isAdmin) {
-            if (!targetName.equals(sender.name, ignoreCase = true)) {
+            val isOwner = if (sender is org.bukkit.entity.Player) {
+                sender.uniqueId == targetPlayer.uniqueId
+            } else {
+                targetName.equals(sender.name, ignoreCase = true)
+            }
+
+            if (!isOwner) {
                 sender.sendFailed("You can only drop your own morphs.")
                 return 0
             }
