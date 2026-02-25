@@ -12,10 +12,12 @@ import one.pkg.om.OmMain
 import one.pkg.om.manager.HostilityManager
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.OmKeys
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.scheduleResetHealth
 import one.pkg.om.utils.sendWarning
 import org.bukkit.Bukkit
+import java.util.function.Consumer
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
@@ -34,6 +36,9 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     private var tickCounter = player.entityId
 
     internal val hostilityPredicate = HostilityPredicate()
+
+    private var cachedSyncConsumer: Consumer<ScheduledTask>? = null
+    private var cachedSyncEntity: Entity? = null
 
     open val hasKnockback: Boolean = true
     open val skills = mutableMapOf<Int, (Player) -> Unit>()
@@ -223,7 +228,12 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
         if (Bukkit.isOwnedByCurrentRegion(entity)) {
             syncEntityState(entity)
         } else {
-            entity.runAs { _ -> syncEntityState(entity) }
+            // Optimization: Reuse Consumer to avoid lambda allocation in hot loop
+            if (cachedSyncEntity != entity || cachedSyncConsumer == null) {
+                cachedSyncEntity = entity
+                cachedSyncConsumer = Consumer { _ -> syncEntityState(entity) }
+            }
+            entity.runAs(cachedSyncConsumer!!)
         }
     }
 
