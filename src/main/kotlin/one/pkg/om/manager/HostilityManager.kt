@@ -118,4 +118,8 @@ object HostilityManager {
 
         return hostilityRules[victim]?.contains(aggressor) == true
     }
+
+    fun getAggressors(victim: EntityType): Set<EntityType>? {
+        return hostilityRules[victim]
+    }
 }

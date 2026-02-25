@@ -36,6 +36,7 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
     private var tickCounter = player.entityId
 
     internal val hostilityPredicate = HostilityPredicate()
+    private val cachedAggressors = HostilityManager.getAggressors(entityType)
 
     private var cachedSyncConsumer: Consumer<ScheduledTask>? = null
     private var cachedSyncEntity: Entity? = null
@@ -294,7 +295,13 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
 
         override fun test(it: Entity): Boolean {
             if (count >= 50) return false
-            if (it is Mob && it.target == null && HostilityManager.shouldAttack(it.type, entityType)) {
+            if (it !is Mob || it.target != null) return false
+
+            val type = it.type
+            // Optimization: Use cached aggressors set to avoid Map lookup in HostilityManager.shouldAttack
+            val shouldAttack = type == EntityType.WARDEN || (cachedAggressors != null && cachedAggressors.contains(type))
+
+            if (shouldAttack) {
                 count++
                 it.target = player
                 return false
