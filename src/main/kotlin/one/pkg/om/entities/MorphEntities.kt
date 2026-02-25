@@ -11,6 +11,7 @@ package one.pkg.om.entities
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import one.pkg.om.OmMain
 import one.pkg.om.utils.runAtFixedRate
+import one.pkg.om.utils.getPlugin
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -23,12 +24,16 @@ abstract class MorphEntities(val player: Player) {
     protected open fun getTickPeriod(): Long = 1L
 
     protected fun setSelfVisible(visible: Boolean) {
-        val plugin = OmMain.getInstance()
-        Bukkit.getOnlinePlayers().forEach { other ->
-            if (other != player) {
-                if (visible) {
+        val plugin = getPlugin()
+        if (visible) {
+            Bukkit.getOnlinePlayers().forEach { other ->
+                if (other != player) {
                     other.showEntity(plugin, player)
-                } else {
+                }
+            }
+        } else {
+            player.world.players.forEach { other ->
+                if (other != player) {
                     other.hideEntity(plugin, player)
                 }
             }
@@ -36,12 +41,10 @@ abstract class MorphEntities(val player: Player) {
     }
 
     protected fun refreshSelfVisibility() {
-        val plugin = OmMain.getInstance()
-        Bukkit.getOnlinePlayers().forEach { other ->
-            if (other != player) {
-                other.hideEntity(plugin, player)
-                other.showEntity(plugin, player)
-            }
+        val plugin = getPlugin()
+        player.trackedBy.forEach { other ->
+            other.hideEntity(plugin, player)
+            other.showEntity(plugin, player)
         }
     }
 
