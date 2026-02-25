@@ -69,6 +69,9 @@ object RequestManager {
                 s?.sendWarning("Request to ${t?.name ?: "player"} expired.")
                 t?.sendWarning("Request from ${s?.name ?: "player"} expired.")
             }
+            if (currentRequests.isEmpty()) {
+                requests.remove(targetId, currentRequests)
+            }
         }
     }
 
@@ -89,6 +92,9 @@ object RequestManager {
         }
 
         currentRequests.remove(senderId)
+        if (currentRequests.isEmpty()) {
+            requests.remove(receiverId, currentRequests)
+        }
 
         val senderData = OManager.playerMorph[sender]
         if (senderData != null) {
@@ -127,6 +133,9 @@ object RequestManager {
         }
 
         currentRequests.remove(senderId)
+        if (currentRequests.isEmpty()) {
+            requests.remove(receiverId, currentRequests)
+        }
         val sender = Bukkit.getPlayer(senderId)
 
         sender?.sendFailed("${receiver.name} denied your request.")
