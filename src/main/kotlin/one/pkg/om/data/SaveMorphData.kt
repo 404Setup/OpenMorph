@@ -65,7 +65,7 @@ data class SaveMorphData(
         if (name.length > 64) return
         if (type.equals("PLAYER", ignoreCase = true) && name.length > 16) return
 
-        if (skin != null && skin.length > 20000) return
+        if (skin != null && skin.length > 5000) return
         if (signature != null && signature.length > 5000) return
 
         this.activeMorphType = type
@@ -209,7 +209,7 @@ data class SaveMorphData(
 
     fun addPlayer(data: SavePlayerData): Boolean {
         // Security: Limit skin data length to prevent storage exhaustion/DoS
-        if (data.skin.length > 20000) return false
+        if (data.skin.length > 5000) return false
         // Security: Limit player name length (Minecraft max is 16)
         if (data.name.length > 16) return false
 

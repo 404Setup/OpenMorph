@@ -34,13 +34,13 @@ class SaveMorphDataSecurityTest {
         val uuid = UUID.randomUUID()
         val data = SaveMorphData(uuid, ArrayList(), ArrayList(), ArrayList())
 
-        val longSkin = "A".repeat(20001) // Slightly over 20k limit
+        val longSkin = "A".repeat(5001) // Slightly over 5k limit
         val result = data.addPlayer(SavePlayerData(UUID.randomUUID(), "LongPlayer", longSkin))
 
-        assertFalse(result, "Should reject skin data > 20,000 characters")
+        assertFalse(result, "Should reject skin data > 5,000 characters")
         assertEquals(0, data.players.size, "Player should not be added")
 
-        val validSkin = "A".repeat(19000)
+        val validSkin = "A".repeat(4900)
         val validResult = data.addPlayer(SavePlayerData(UUID.randomUUID(), "ShortPlayer", validSkin))
 
         assertTrue(validResult, "Should accept valid skin data length")
