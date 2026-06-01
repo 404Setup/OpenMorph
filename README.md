@@ -64,8 +64,7 @@ Enabling entity preview for a player will cause all of the player's attacks to l
 system will interpret this as the player attempting to attack themselves. This will prevent the player from damaging
 other entities normally.
 
-Unlike OpenMorph, FeatherMorph has a client-side renderer that can render the player as the target entity. However,
-FeatherMorph is no longer being updated and will no longer be compatible with future versions of Minecraft. OpenMorph
+Unlike OpenMorph, FeatherMorph has a client-side renderer that can render the player as the target entity. OpenMorph
 does not have this feature, but it may be added in the future.
 
 - Will OpenMorph be compatible with i18n?
