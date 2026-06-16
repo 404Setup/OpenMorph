@@ -39,6 +39,11 @@ import java.util.concurrent.CompletableFuture
 
 class MorphCommand : SubCommand {
 
+    companion object {
+        private val cachedEntityNames by lazy { EntityType.entries.map { it.name } }
+        private val cachedBlockNames by lazy { Material.entries.filter { it.isBlock }.map { it.name } }
+    }
+
     override fun register(root: LiteralArgumentBuilder<CommandSourceStack>) {
         root.then(
             Commands.literal("morph")
@@ -187,15 +192,15 @@ class MorphCommand : SubCommand {
                 emptyList()
             } else {
                 when {
-                    type.startsWith("entity") -> if (data.offlineData.entities.contains("all")) EntityType.entries.map { it.name } else data.offlineData.entities
+                    type.startsWith("entity") -> if (data.offlineData.entities.contains("all")) cachedEntityNames else data.offlineData.entities
                     type.startsWith("player") -> data.offlineData.players.map { it.name }
                     else -> emptyList()
                 }
             }
         } else {
             when {
-                type.startsWith("entity") -> EntityType.entries.map { it.name }
-                type.startsWith("block") -> Material.entries.filter { it.isBlock }.map { it.name }
+                type.startsWith("entity") -> cachedEntityNames
+                type.startsWith("block") -> cachedBlockNames
                 type.startsWith("player") -> Bukkit.getOnlinePlayers().map { it.name }
                 else -> emptyList()
             }
