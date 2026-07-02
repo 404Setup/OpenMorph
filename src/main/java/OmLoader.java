@@ -14,7 +14,7 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.repository.RemoteRepository;
 
 public class OmLoader implements PluginLoader {
-    final String kotlinVersion = "2.3.0";
+    final String kotlinVersion = "2.4.0";
 
     @Override
     public void classloader(PluginClasspathBuilder builder) {
@@ -22,11 +22,11 @@ public class OmLoader implements PluginLoader {
         addDependency(resolver, "org.jetbrains.kotlin:kotlin-stdlib:" + kotlinVersion);
         addDependency(resolver, "org.jetbrains.kotlin:kotlin-reflect:" + kotlinVersion);
         addDependency(resolver, "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2");
-        addDependency(resolver, "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0");
-        addDependency(resolver, "org.jetbrains.kotlinx:atomicfu:0.29.0");
-        addDependency(resolver, "org.jetbrains.kotlinx:kotlinx-io-core:0.8.2");
-        addDependency(resolver, "org.jetbrains.kotlinx:kotlinx-datetime:0.7.1");
-        addDependency(resolver, "com.github.avro-kotlin.avro4k:avro4k-core:2.9.0");
+        addDependency(resolver, "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0");
+        addDependency(resolver, "org.jetbrains.kotlinx:atomicfu:0.33.0");
+        addDependency(resolver, "org.jetbrains.kotlinx:kotlinx-io-core:0.9.1");
+        addDependency(resolver, "org.jetbrains.kotlinx:kotlinx-datetime:0.8.0");
+        addDependency(resolver, "com.github.avro-kotlin.avro4k:avro4k-core:2.10.1");
         resolver.addRepository(
                 new RemoteRepository.Builder(
                         "paper",
