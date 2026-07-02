@@ -31,13 +31,13 @@ class OmMain : JavaPlugin() {
         mkdirs()
     }
 
-    fun JavaPlugin.registerEvents(listener: Listener) {
-        logger.info("Registering event listener: ${listener.javaClass.simpleName}")
-        server.pluginManager.registerEvents(listener, this)
+    fun Listener.registerEvents() {
+        logger.info("Registering event listener: ${this.javaClass.simpleName}")
+        server.pluginManager.registerEvents(this, instance)
     }
 
     fun JavaPlugin.registerEvents(vararg listener: Listener) {
-        listener.forEach { registerEvents(it) }
+        listener.forEach { it.registerEvents() }
     }
 
     override fun onEnable() {
@@ -50,7 +50,7 @@ class OmMain : JavaPlugin() {
             .forEach {
                 try {
                     val listener = it.getDeclaredConstructor().newInstance() as Listener
-                    registerEvents(listener)
+                    listener.registerEvents()
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

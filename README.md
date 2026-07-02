@@ -4,8 +4,6 @@
 
 An open-source, universal camouflage plugin.
 
-Want access to an early access version of OpenMorph? Support me from Patreon.
-
 [![Patreon](https://img.shields.io/badge/Patreon-Support%20me-ff69b4.svg)](https://www.patreon.com/c/tranic)
 
 ## Features
@@ -46,14 +44,6 @@ entity death.
 If these plugins clear OpenMorph entities while cleaning up other entities, the entity will be considered "dead" by the
 system. At this point, OpenMorph doesn't know the cause of the entity's death; it only knows the bound entity is dead.
 Therefore, OpenMorph will trigger a simulated entity death, and the player will also die.
-
-- Why are the community edition updates so slowly? Is it possible to get the latest updates without paying?
-
-Due to financial constraints, I have had to divide OpenMorph into Community Edition and Premium Edition. The Premium
-Edition enjoys builds from the latest codebase, while the Community Edition's codebase is 45 days older than the Premium
-Edition's.
-
-Fixes for particularly serious bugs are not subject to the Premium codebase synchronization limitations.
 
 - Why can't I see my disguise?
 
