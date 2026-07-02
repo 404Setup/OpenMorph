@@ -13,7 +13,8 @@ import com.destroystokyo.paper.profile.ProfileProperty
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
-class MorphPlayer(player: Player, val targetName: String, val skinValue: String?, val skinSignature: String?) : MorphEntities(player) {
+class MorphPlayer(player: Player, val targetName: String, val skinValue: String?, val skinSignature: String?) :
+    MorphEntities(player) {
     private var originalProfile: PlayerProfile? = null
 
     override fun start() {

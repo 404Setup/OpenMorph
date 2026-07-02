@@ -12,20 +12,21 @@ import one.pkg.om.manager.BlockPosition
 import one.pkg.om.manager.OManager
 import one.pkg.om.utils.OmKeys
 import one.pkg.om.utils.RestrictedBlocks
-import one.pkg.om.utils.isIt
 import one.pkg.om.utils.runAs
 import one.pkg.om.utils.sendFailed
-import org.bukkit.*
+import org.bukkit.Bukkit
+import org.bukkit.GameMode
+import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.block.BlockFace
-import org.bukkit.block.BlockState
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Interaction
-import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 import org.bukkit.entity.Player
+import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -38,9 +39,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private var solidifiedLocation: Location? = null
     private var previousGameMode: GameMode? = null
     private var isRunning = false
-    // Optimization: Reuse Location object to avoid allocations in tick loop
     private val lastSyncedLocation = Location(player.world, 0.0, 0.0, 0.0)
-    // Reuse location object to avoid allocations in tick loop
     private val scratchLocation = Location(player.world, 0.0, 0.0, 0.0)
 
     override fun start() {
@@ -82,9 +81,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
             if (idleTicks >= 120 && idleTicks % 20 == 0) {
                 trySolidify()
             }
-            // Optimization: Remove redundant syncLocation() call.
-            // Location updates are handled by onMove with MONITOR priority,
-            // avoiding unnecessary player.getLocation() calls every tick when stationary.
         } else {
             val loc = solidifiedLocation ?: return
             if (loc.block.type != material) {
@@ -114,7 +110,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private fun syncLocation(target: Location? = null) {
         if (!isSolidified) {
             if (target != null) {
-                // Optimization: Reuse event location to avoid expensive player.getLocation() call
                 scratchLocation.world = target.world
                 scratchLocation.x = target.x
                 scratchLocation.y = target.y
@@ -126,7 +121,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 scratchLocation.pitch = 0f
             }
 
-            // Check if update is needed (compare with last synced state)
             if (lastSyncedLocation.world == scratchLocation.world &&
                 lastSyncedLocation.x == scratchLocation.x &&
                 lastSyncedLocation.y == scratchLocation.y &&
@@ -135,7 +129,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                 lastSyncedLocation.pitch == scratchLocation.pitch
             ) return
 
-            // Update cached state
             lastSyncedLocation.world = scratchLocation.world
             lastSyncedLocation.x = scratchLocation.x
             lastSyncedLocation.y = scratchLocation.y
@@ -143,7 +136,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
             lastSyncedLocation.yaw = scratchLocation.yaw
             lastSyncedLocation.pitch = scratchLocation.pitch
 
-            // Use the updated cached object for teleportAsync (safe because teleportAsync copies)
             displayEntity?.teleportAsync(lastSyncedLocation)
             interactionEntity?.teleportAsync(lastSyncedLocation)
         }
@@ -216,7 +208,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
     private fun trySolidify() {
         if (isSolidified || !isRunning) return
 
-        // Optimization: Reuse scratchLocation to avoid allocating new Location objects
         player.getLocation(scratchLocation)
         val legs = scratchLocation.block
         val ground = legs.getRelative(BlockFace.DOWN)
@@ -238,7 +229,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
         player.teleportAsync(centerLoc).thenRun {
             if (!isRunning) return@thenRun
             player.runAs { _ ->
-                // Security fix: Re-validate block state to prevent race conditions (TOCTOU)
                 if (!legs.isReplaceable) {
                     player.sendFailed("Cannot solidify: Block is obstructed.")
                     return@runAs
@@ -249,8 +239,6 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                     return@runAs
                 }
 
-                // Security: Fire BlockPlaceEvent to check for build permissions and region protection
-                // Fix: Temporarily set block type so event.getBlock() reflects the new block
                 val replacedState = legs.state
                 legs.setType(material, false)
 
@@ -274,7 +262,7 @@ class MorphBlock(player: Player, val material: Material) : MorphEntities(player)
                     e.printStackTrace()
                 } finally {
                     if (!success) {
-                        replacedState.update(true, false) // Revert changes
+                        replacedState.update(true, false)
                         player.sendFailed("Cannot solidify: Build permission denied.")
                         return@runAs
                     }

@@ -202,16 +202,9 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
         val hostilityDivisor = 40 / period
         if (currentTick % hostilityDivisor == 0) {
             hostilityPredicate.reset()
-            // Optimization: Limit collection size at source to avoid large allocations and iterations
-            // when many mobs are nearby (e.g. mob farms).
-            // Logic is handled inside the predicate (side-effect) to avoid allocating a result list.
             player.world.getNearbyEntities(player.boundingBox.expand(15.0, 15.0, 15.0), hostilityPredicate)
         }
 
-        // Throttle tick execution if there are no passive skills to run.
-        // Location sync is handled by PlayerMoveEvent, so this only affects
-        // health/pose sync and disguise respawn, which don't need 20Hz updates.
-        // This reduces scheduler overhead by 80%.
         val syncDivisor = 5 / period
         if (passiveSkills.isEmpty() && currentTick % syncDivisor != 0) return
 
@@ -224,12 +217,9 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             return
         }
 
-        // Location sync is handled by onMove with MONITOR priority
-
         if (Bukkit.isOwnedByCurrentRegion(entity)) {
             syncEntityState(entity)
         } else {
-            // Optimization: Reuse Consumer to avoid lambda allocation in hot loop
             if (cachedSyncEntity != entity || cachedSyncConsumer == null) {
                 cachedSyncEntity = entity
                 cachedSyncConsumer = Consumer { _ -> syncEntityState(entity) }
@@ -298,7 +288,6 @@ open class MorphEntity(player: Player, val entityType: EntityType) : MorphEntiti
             if (it !is Mob || it.target != null) return false
 
             val type = it.type
-            // Optimization: Use cached aggressors set to avoid Map lookup in HostilityManager.shouldAttack
             val shouldAttack = type == EntityType.WARDEN || (cachedAggressors != null && cachedAggressors.contains(type))
 
             if (shouldAttack) {

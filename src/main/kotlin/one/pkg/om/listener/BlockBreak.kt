@@ -19,7 +19,6 @@ class BlockBreak : Listener {
     @EventHandler
     fun onBreak(e: BlockBreakEvent) {
         val loc = e.block.location
-        // Optimization: Use O(1) lookup map instead of iterating all morphed players (O(N))
         val pos = BlockPosition(e.block.world.name, loc.blockX, loc.blockY, loc.blockZ)
 
         val player = OManager.blockMorphs[pos] ?: return

@@ -22,28 +22,17 @@ class PlayerWorldChange : Listener {
         val world = player.world
         val plugin = getPlugin()
 
-        // Case 1: Player (morphed or not) enters a world.
-        // We need to ensure any EXISTING morphs in this world are hidden from this player.
-        // This is necessary because setSelfVisible(false) only hides from players currently in the world.
         OManager.playerMorph.forEach { (morphedPlayer, data) ->
-            // activeMorphEntityUuid check or similar ensures it's an active morph
             if (morphedPlayer.world == world && morphedPlayer != player) {
-                // If the morphed player has an active disguise (is hidden)
-                // We should hide them from the new player.
-                // We can check if they are supposed to be hidden.
-                // Generally, if they are in OManager.playerMorph and have an active morph, they are hidden.
                 if (data.current != null) {
                     player.hideEntity(plugin, morphedPlayer)
                 }
             }
         }
 
-        // Case 2: The player WHO CHANGED WORLD is a morph.
-        // We need to hide this player from everyone in the new world.
         if (OManager.playerMorph.containsKey(player)) {
             val data = OManager.playerMorph[player]
             if (data?.current != null) {
-                // Iterate players in this world and hide self
                 world.players.forEach { other ->
                     if (other != player) {
                         other.hideEntity(plugin, player)
