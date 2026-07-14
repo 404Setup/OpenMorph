@@ -1,9 +1,9 @@
 plugins {
-    id("java")
+    java
     kotlin("jvm") version "2.4.0"
     kotlin("plugin.serialization") version "2.4.0"
 
-    id("com.gradleup.shadow") version "9.4.3"
+    id("com.gradleup.shadow") version "9.5.1"
     id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
@@ -17,15 +17,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
     implementation("com.github.avro-kotlin.avro4k:avro4k-core:2.10.1")
-    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 
 java {
     val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -41,12 +37,8 @@ kotlin {
 }
 
 tasks {
-    test {
-        useJUnitPlatform()
-    }
-
     runServer {
-        minecraftVersion("1.21.11")
+        minecraftVersion("26.1.2")
     }
 
     shadowJar {
@@ -74,9 +66,5 @@ tasks {
         filesMatching("paper-plugin.yml") {
             expand(props)
         }
-    }
-
-    test {
-        useJUnitPlatform()
     }
 }

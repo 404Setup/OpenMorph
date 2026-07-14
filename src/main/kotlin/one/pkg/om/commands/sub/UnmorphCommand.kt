@@ -16,6 +16,7 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import one.pkg.om.commands.SubCommand
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.handleUiRedirect
 import one.pkg.om.utils.op
 import one.pkg.om.utils.sendFailed
 import one.pkg.om.utils.sendSuccess
@@ -36,6 +37,10 @@ class UnmorphCommand : SubCommand {
     private fun execute(ctx: CommandContext<CommandSourceStack>, hasPlayerArg: Boolean): Int {
         val sender = ctx.source.sender
         var targetPlayer = sender as? Player
+
+        if (!hasPlayerArg && handleUiRedirect(sender, "unmorph")) {
+            return 1
+        }
 
         if (hasPlayerArg && sender.op()) {
             targetPlayer =

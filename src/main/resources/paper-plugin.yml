@@ -1,9 +1,9 @@
 name: OpenMorph
-version: '26.1.1'
+version: '26.1.2'
 main: one.pkg.om.OmMain
 bootstrapper: one.pkg.om.OmBootstrap
 loader: OmLoader
-api-version: '1.21.11'
+api-version: '26.1.2'
 folia-supported: true
 prefix: OpenMorph
 load: STARTUP

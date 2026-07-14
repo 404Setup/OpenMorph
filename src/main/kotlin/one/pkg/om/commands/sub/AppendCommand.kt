@@ -21,10 +21,12 @@ import one.pkg.om.commands.SubCommand
 import one.pkg.om.data.MorphIgnored
 import one.pkg.om.data.SavePlayerData
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.handleUiRedirect
 import one.pkg.om.utils.op
 import one.pkg.om.utils.sendFailed
 import one.pkg.om.utils.sendSuccess
 import one.pkg.om.utils.sendWarning
+import one.pkg.om.utils.suggestMorphTypes
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.EntityType
@@ -36,16 +38,17 @@ class AppendCommand : SubCommand {
         root.then(
             Commands.literal("append")
                 .requires { it.sender.op() }
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    if (handleUiRedirect(sender, "append")) return@executes 1
+                    sender.sendMessage("Usage: /om append <player> <type> <id>")
+                    1
+                }
                 .then(
                     Commands.argument("player", ArgumentTypes.player())
                         .then(
                             Commands.argument("type", StringArgumentType.word())
-                                .suggests { _, builder ->
-                                    listOf("entity", "block", "player")
-                                        .filter { it.startsWith(builder.remaining, true) }
-                                        .forEach { builder.suggest(it) }
-                                    builder.buildFuture()
-                                }
+                                .suggests { _, builder -> suggestMorphTypes(builder) }
                                 .then(
                                     Commands.argument("id", StringArgumentType.string())
                                         .suggests(this::suggestIds)

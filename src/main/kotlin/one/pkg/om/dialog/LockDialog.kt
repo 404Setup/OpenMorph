@@ -13,37 +13,31 @@ import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
 import io.papermc.paper.registry.data.dialog.action.DialogAction
 import io.papermc.paper.registry.data.dialog.input.DialogInput
-import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class LockDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        val typeOptions = listOf(
-            SingleOptionDialogInput.OptionEntry.create("entity", Component.text("Entity"), true),
-            SingleOptionDialogInput.OptionEntry.create("block", Component.text("Block"), false),
-            SingleOptionDialogInput.OptionEntry.create("player", Component.text("Player"), false)
-        )
-
         val inputs = listOf(
-            DialogInput.singleOption("type", Component.text("Type"), typeOptions).build(),
+            DialogInput.singleOption("type", Component.text("Type"), IDialog.typeOptions).build(),
             DialogInput.text("id", Component.text("Target ID/Name")).build()
         )
 
-        val action = ActionButton.create(
-            Component.text("Lock"),
-            Component.text("Lock the selected morph"),
-            100,
-            DialogAction.commandTemplate("om lock {type} {id}")
-        )
+        val lockIdButton = ActionButton.builder(Component.text("Lock by ID/Name"))
+            .action(DialogAction.commandTemplate("om lock {type} {id}"))
+            .build()
+
+        val lockHeldBlockButton = ActionButton.builder(Component.text("Lock Held Block"))
+            .action(DialogAction.commandTemplate("om lock block"))
+            .build()
 
         val base = DialogBase.builder(Component.text("Lock Morph"))
             .inputs(inputs)
             .build()
 
         builder.base(base)
-        builder.type(DialogType.multiAction(listOf(action)).build())
+        builder.type(DialogType.multiAction(listOf(lockIdButton, lockHeldBlockButton)).build())
     }
 
     override val key = "lock"

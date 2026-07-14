@@ -12,26 +12,34 @@ import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
 import io.papermc.paper.registry.data.dialog.ActionButton
 import io.papermc.paper.registry.data.dialog.action.DialogAction
-import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.input.DialogInput
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class UnMorphDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        val base = DialogBase.builder(Component.text("Unmorph"))
-            .body(listOf(DialogBody.plainMessage(Component.text("Do you want to unmorph?"))))
-            .build()
-        builder.base(base)
+        val inputs = listOf(
+            DialogInput.text("player", Component.text("Player Name (Optional, Admin only)")).build()
+        )
 
-        val yesButton = ActionButton.builder(Component.text("Yes"))
+        val unmorphSelfButton = ActionButton.builder(Component.text("Unmorph Self"))
             .action(DialogAction.commandTemplate("om unmorph"))
             .build()
 
-        val noButton = ActionButton.builder(Component.text("No"))
+        val unmorphOtherButton = ActionButton.builder(Component.text("Unmorph Other"))
+            .action(DialogAction.commandTemplate("om unmorph {player}"))
             .build()
 
-        builder.type(DialogType.confirmation(yesButton, noButton))
+        val cancelButton = ActionButton.builder(Component.text("Cancel"))
+            .build()
+
+        val base = DialogBase.builder(Component.text("Unmorph Menu"))
+            .inputs(inputs)
+            .build()
+        builder.base(base)
+
+        builder.type(DialogType.multiAction(listOf(unmorphSelfButton, unmorphOtherButton, cancelButton)).build())
     }
 
     override val key = "unmorph"

@@ -26,7 +26,6 @@ object HostilityManager {
     }
 
     private fun loadHostilityRules(): Map<EntityType, Set<EntityType>> {
-        // Optimization: Use EnumMap for O(1) lookups and better memory usage compared to HashMap
         val rules = EnumMap<EntityType, Set<EntityType>>(EntityType::class.java)
         val resourcePath = "/data/hostility"
 
@@ -52,7 +51,6 @@ object HostilityManager {
             }
 
             try {
-                // Ensure the directory stream is closed to prevent resource leaks
                 Files.walk(path, 1).use { stream ->
                     stream.forEach { filePath ->
                         val fileName = filePath.fileName.toString()
@@ -66,7 +64,6 @@ object HostilityManager {
                                         "Invalid entity type in hostility file: $victimName"
                                     }
                                 } else {
-                                    // Optimization: Use EnumSet for O(1) lookups and compact memory representation
                                     val aggressors = EnumSet.noneOf(EntityType::class.java)
 
                                     javaClass.classLoader.getResourceAsStream("$resourcePath/$fileName")?.use { stream ->
@@ -104,8 +101,7 @@ object HostilityManager {
             } finally {
                 try {
                     fs?.close()
-                } catch (e: Exception) {
-                    // Ignore close errors
+                } catch (_: Exception) {
                 }
             }
         }

@@ -12,30 +12,32 @@ import io.papermc.paper.registry.data.dialog.ActionButton
 import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
 import io.papermc.paper.registry.data.dialog.action.DialogAction
-import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.input.DialogInput
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class DropDialog: IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        val entityButton = ActionButton.builder(Component.text("Entity"))
-            .action(DialogAction.commandTemplate("/om drop @s entity "))
+        val inputs = listOf(
+            DialogInput.text("player", Component.text("Target Player (Optional)")).build(),
+            DialogInput.singleOption("type", Component.text("Type"), IDialog.typeOptions).build(),
+            DialogInput.text("id", Component.text("Morph ID/Name")).build()
+        )
+
+        val dropSelfButton = ActionButton.builder(Component.text("Drop My Morph"))
+            .action(DialogAction.commandTemplate("om drop @s {type} {id}"))
             .build()
 
-        val blockButton = ActionButton.builder(Component.text("Block"))
-            .action(DialogAction.commandTemplate("/om drop @s block "))
-            .build()
-
-        val playerButton = ActionButton.builder(Component.text("Player"))
-            .action(DialogAction.commandTemplate("/om drop @s player "))
+        val dropOtherButton = ActionButton.builder(Component.text("Drop Other's Morph"))
+            .action(DialogAction.commandTemplate("om drop {player} {type} {id}"))
             .build()
 
         builder.base(DialogBase.builder(Component.text("Drop Morph"))
-            .body(listOf(DialogBody.plainMessage(Component.text("Choose a category to drop from:"))))
+            .inputs(inputs)
             .build())
 
-        builder.type(DialogType.multiAction(listOf(entityButton, blockButton, playerButton)).build())
+        builder.type(DialogType.multiAction(listOf(dropSelfButton, dropOtherButton)).build())
     }
 
     override val key = "drop"

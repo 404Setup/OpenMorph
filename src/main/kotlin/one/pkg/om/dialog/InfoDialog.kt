@@ -11,31 +11,34 @@ package one.pkg.om.dialog
 import io.papermc.paper.registry.data.dialog.ActionButton
 import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
-import io.papermc.paper.registry.data.dialog.body.DialogBody
-import io.papermc.paper.registry.data.dialog.type.DialogType
 import io.papermc.paper.registry.data.dialog.action.DialogAction
+import io.papermc.paper.registry.data.dialog.input.DialogInput
+import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.ClickEvent
 
 @Suppress("UnstableApiUsage")
 class InfoDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        val helpButton = ActionButton.builder(Component.text("Help"))
-            .action(DialogAction.staticAction(ClickEvent.runCommand("/om help")))
+        val inputs = listOf(
+            DialogInput.text("player", Component.text("Player Name (Optional, Admin only)")).build()
+        )
+
+        val selfButton = ActionButton.builder(Component.text("My Info"))
+            .action(DialogAction.commandTemplate("om info"))
+            .build()
+
+        val otherButton = ActionButton.builder(Component.text("Player Info"))
+            .action(DialogAction.commandTemplate("om info {player}"))
             .build()
 
         val closeButton = ActionButton.builder(Component.text("Close"))
             .build()
 
         builder.base(DialogBase.builder(Component.text("OpenMorph Info"))
-            .body(listOf(
-                DialogBody.plainMessage(Component.text("OpenMorph Plugin")),
-                DialogBody.plainMessage(Component.text("A powerful morphing tool for your server.")),
-                DialogBody.plainMessage(Component.text("Use /om help for a list of commands."))
-            ))
+            .inputs(inputs)
             .build())
 
-        builder.type(DialogType.multiAction(listOf(helpButton, closeButton)).build())
+        builder.type(DialogType.multiAction(listOf(selfButton, otherButton, closeButton)).build())
     }
 
     override val key = "info"

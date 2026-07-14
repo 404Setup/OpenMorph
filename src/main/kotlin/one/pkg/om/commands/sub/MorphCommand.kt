@@ -24,10 +24,7 @@ import one.pkg.om.entities.MorphFactory
 import one.pkg.om.entities.MorphPlayer
 import one.pkg.om.manager.BanManager
 import one.pkg.om.manager.OManager
-import one.pkg.om.utils.op
-import one.pkg.om.utils.sendFailed
-import one.pkg.om.utils.sendSuccess
-import one.pkg.om.utils.sendWarning
+import one.pkg.om.utils.*
 import org.bukkit.Bukkit
 import org.bukkit.Difficulty
 import org.bukkit.Material
@@ -47,13 +44,15 @@ class MorphCommand : SubCommand {
     override fun register(root: LiteralArgumentBuilder<CommandSourceStack>) {
         root.then(
             Commands.literal("morph")
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    if (handleUiRedirect(sender, "morph")) return@executes 1
+                    sender.sendMessage("Usage: /om morph <entity|block|player> <target> [player]")
+                    1
+                }
                 .then(
                     Commands.argument("type", StringArgumentType.word())
-                        .suggests { _, builder ->
-                            listOf("entity", "block", "player").filter { it.startsWith(builder.remaining, true) }
-                                .forEach { builder.suggest(it) }
-                            builder.buildFuture()
-                        }
+                        .suggests { _, builder -> suggestMorphTypes(builder) }
                         .then(
                             Commands.argument("target", StringArgumentType.string())
                                 .suggests(this::suggestTarget)

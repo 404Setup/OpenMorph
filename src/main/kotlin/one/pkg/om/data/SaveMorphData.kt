@@ -43,7 +43,8 @@ data class SaveMorphData(
     var activeMorphEntityUuid: UUID? = null,
     var solidifiedBlockParams: String? = null,
     var forcedKeyGameMode: String? = null,
-    var originalMaxHealth: Double? = null
+    var originalMaxHealth: Double? = null,
+    var uiMode: String = "COMMAND"
 ) {
     @Transient
     private var isDirty: Boolean = false
@@ -62,7 +63,6 @@ data class SaveMorphData(
     }
 
     fun setActiveMorph(type: String, name: String, skin: String? = null, signature: String? = null) {
-        // Security: Limit inputs to prevent storage exhaustion or DoS
         if (type.length > 32) return
         if (name.length > 64) return
         if (type.equals("PLAYER", ignoreCase = true) && name.length > 16) return

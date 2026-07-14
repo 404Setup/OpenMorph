@@ -12,6 +12,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import one.pkg.om.commands.sub.*
+import one.pkg.om.utils.handleUiRedirect
 
 class OmCommand {
     private val subCommands = listOf(
@@ -27,12 +28,15 @@ class OmCommand {
         RequestCommand(),
         SaveAllCommand(),
         LockCommand(),
-        UnlockCommand()
+        UnlockCommand(),
+        SelectUiCommand()
     )
 
     fun register(): LiteralArgumentBuilder<CommandSourceStack> {
         val root = Commands.literal("om")
             .executes { ctx ->
+                val sender = ctx.source.sender
+                if (handleUiRedirect(sender, "main")) return@executes 1
                 sendHelp(ctx.source)
                 1
             }
@@ -51,6 +55,7 @@ class OmCommand {
         sender.sendMessage("/om drop <type> <id> <player>")
         sender.sendMessage("/om nametag - Toggle nametag")
         sender.sendMessage("/om request <send|yes|no> <player>")
+        sender.sendMessage("/om selectui <COMMAND|DIALOG|CONTAINER> - Change your UI style")
         if (sender.hasPermission("404morph.admin")) {
             sender.sendMessage("/om append <player> <type> <id>")
             sender.sendMessage("/om info [player]")

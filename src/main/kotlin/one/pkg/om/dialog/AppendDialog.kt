@@ -12,30 +12,28 @@ import io.papermc.paper.registry.data.dialog.ActionButton
 import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
 import io.papermc.paper.registry.data.dialog.action.DialogAction
-import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.input.DialogInput
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 class AppendDialog: IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        val entityButton = ActionButton.builder(Component.text("Entity"))
-            .action(DialogAction.commandTemplate("/om append {target} entity "))
-            .build()
+        val inputs = listOf(
+            DialogInput.text("player", Component.text("Target Player")).build(),
+            DialogInput.singleOption("type", Component.text("Type"), IDialog.typeOptions).build(),
+            DialogInput.text("id", Component.text("Morph ID/Name")).build()
+        )
 
-        val blockButton = ActionButton.builder(Component.text("Block"))
-            .action(DialogAction.commandTemplate("/om append {target} block "))
-            .build()
-
-        val playerButton = ActionButton.builder(Component.text("Player"))
-            .action(DialogAction.commandTemplate("/om append {target} player "))
+        val appendButton = ActionButton.builder(Component.text("Append"))
+            .action(DialogAction.commandTemplate("om append {player} {type} {id}"))
             .build()
 
         builder.base(DialogBase.builder(Component.text("Append Menu"))
-            .body(listOf(DialogBody.plainMessage(Component.text("Choose a category to append:"))))
+            .inputs(inputs)
             .build())
 
-        builder.type(DialogType.multiAction(listOf(entityButton, blockButton, playerButton)).build())
+        builder.type(DialogType.multiAction(listOf(appendButton)).build())
     }
 
     override val key = "append"

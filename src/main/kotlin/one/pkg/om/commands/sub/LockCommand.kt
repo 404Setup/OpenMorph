@@ -17,10 +17,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import one.pkg.om.commands.SubCommand
 import one.pkg.om.manager.BanManager
-import one.pkg.om.utils.op
-import one.pkg.om.utils.resolveTargetId
-import one.pkg.om.utils.sendSuccess
-import one.pkg.om.utils.sendWarning
+import one.pkg.om.utils.*
 import org.bukkit.Bukkit
 import org.bukkit.entity.EntityType
 import java.util.concurrent.CompletableFuture
@@ -31,14 +28,15 @@ class LockCommand : SubCommand {
         root.then(
             Commands.literal("lock")
                 .requires { it.sender.op() }
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    if (handleUiRedirect(sender, "lock")) return@executes 1
+                    sender.sendMessage("Usage: /om lock <type> [id]")
+                    1
+                }
                 .then(
                     Commands.argument("type", StringArgumentType.word())
-                        .suggests { _, builder ->
-                            listOf("entity", "block", "player")
-                                .filter { it.startsWith(builder.remaining, true) }
-                                .forEach { builder.suggest(it) }
-                            builder.buildFuture()
-                        }
+                        .suggests { _, builder -> suggestMorphTypes(builder) }
                         .executes { ctx -> execute(ctx, false) }
                         .then(
                             Commands.argument("id", StringArgumentType.string())

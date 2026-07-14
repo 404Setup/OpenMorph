@@ -21,6 +21,30 @@ interface DataMigrator {
 }
 
 
+@OMData(version = 6)
+class V6Migrator : DataMigrator {
+    override val version = "V6"
+    override fun migrate(source: Source): SaveMorphData {
+        val v6 = Avro.decodeFromSource<SaveMorphDataV6>(source)
+        return SaveMorphData(
+            player = v6.player,
+            blocks = v6.blocks,
+            entities = v6.entities,
+            players = v6.players,
+            activeMorphType = v6.activeMorphType,
+            activeMorphName = v6.activeMorphName,
+            activeMorphSkin = v6.activeMorphSkin,
+            activeMorphSignature = v6.activeMorphSignature,
+            activeMorphEntityUuid = v6.activeMorphEntityUuid,
+            solidifiedBlockParams = v6.solidifiedBlockParams,
+            forcedKeyGameMode = v6.forcedKeyGameMode,
+            originalMaxHealth = v6.originalMaxHealth,
+            uiMode = "COMMAND"
+        )
+    }
+}
+
+
 @OMData(version = 5)
 class V5Migrator : DataMigrator {
     override val version = "V5"
@@ -199,4 +223,22 @@ internal data class SaveMorphDataV1(
     val blocks: MutableList<String>,
     val entities: MutableList<String>,
     val players: MutableList<SavePlayerData>
+)
+
+@Serializable
+internal data class SaveMorphDataV6(
+    @Contextual
+    val player: UUID,
+    val blocks: MutableList<String>,
+    val entities: MutableList<String>,
+    val players: MutableList<SavePlayerData>,
+    var activeMorphType: String? = null,
+    var activeMorphName: String? = null,
+    var activeMorphSkin: String? = null,
+    var activeMorphSignature: String? = null,
+    @Contextual
+    var activeMorphEntityUuid: UUID? = null,
+    var solidifiedBlockParams: String? = null,
+    var forcedKeyGameMode: String? = null,
+    var originalMaxHealth: Double? = null
 )

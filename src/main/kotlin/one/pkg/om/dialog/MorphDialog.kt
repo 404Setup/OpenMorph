@@ -12,29 +12,32 @@ import io.papermc.paper.registry.data.dialog.ActionButton
 import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
 import io.papermc.paper.registry.data.dialog.action.DialogAction
-import io.papermc.paper.registry.data.dialog.body.DialogBody
+import io.papermc.paper.registry.data.dialog.input.DialogInput
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.text.Component
 
+@Suppress("UnstableApiUsage")
 class MorphDialog : IDialog {
     override fun create(builder: DialogRegistryEntry.Builder) {
-        val entityButton = ActionButton.builder(Component.text("Entity"))
-            .action(DialogAction.commandTemplate("/morph entity "))
+        val inputs = listOf(
+            DialogInput.singleOption("type", Component.text("Type"), IDialog.typeOptions).build(),
+            DialogInput.text("target", Component.text("Target (ID/Name)")).build(),
+            DialogInput.text("player", Component.text("Target Player (Optional, Admin only)")).build()
+        )
+
+        val morphSelfButton = ActionButton.builder(Component.text("Morph Self"))
+            .action(DialogAction.commandTemplate("om morph {type} {target}"))
             .build()
 
-        val blockButton = ActionButton.builder(Component.text("Block"))
-            .action(DialogAction.commandTemplate("/morph block "))
-            .build()
-
-        val playerButton = ActionButton.builder(Component.text("Player"))
-            .action(DialogAction.commandTemplate("/morph player "))
+        val morphOtherButton = ActionButton.builder(Component.text("Morph Other"))
+            .action(DialogAction.commandTemplate("om morph {type} {target} {player}"))
             .build()
 
         builder.base(DialogBase.builder(Component.text("Morph Menu"))
-            .body(listOf(DialogBody.plainMessage(Component.text("Choose a category to morph into:"))))
+            .inputs(inputs)
             .build())
 
-        builder.type(DialogType.multiAction(listOf(entityButton, blockButton, playerButton)).build())
+        builder.type(DialogType.multiAction(listOf(morphSelfButton, morphOtherButton)).build())
     }
 
     override val key = "morph"

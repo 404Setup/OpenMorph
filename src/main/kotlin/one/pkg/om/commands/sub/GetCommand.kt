@@ -16,6 +16,7 @@ import one.pkg.om.commands.SubCommand
 import one.pkg.om.entities.MorphBlock
 import one.pkg.om.entities.MorphPlayer
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.handleUiRedirect
 import one.pkg.om.utils.op
 import one.pkg.om.utils.sendSuccess
 import one.pkg.om.utils.sendWarning
@@ -26,7 +27,11 @@ class GetCommand : SubCommand {
         root.then(
             Commands.literal("get")
                 .requires { it.sender.op() }
-                .executes { ctx -> execute(ctx) }
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    if (handleUiRedirect(sender, "get")) return@executes 1
+                    execute(ctx)
+                }
         )
     }
 

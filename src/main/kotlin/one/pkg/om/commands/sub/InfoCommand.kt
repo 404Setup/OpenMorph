@@ -19,6 +19,7 @@ import one.pkg.om.entities.MorphBlock
 import one.pkg.om.entities.MorphEntity
 import one.pkg.om.entities.MorphPlayer
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.handleUiRedirect
 import one.pkg.om.utils.op
 import one.pkg.om.utils.sendSuccess
 import one.pkg.om.utils.sendWarning
@@ -28,7 +29,11 @@ class InfoCommand : SubCommand {
     override fun register(root: LiteralArgumentBuilder<CommandSourceStack>) {
         root.then(
             Commands.literal("info")
-                .executes { ctx -> execute(ctx, false) }
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    if (handleUiRedirect(sender, "info")) return@executes 1
+                    execute(ctx, false)
+                }
                 .then(
                     Commands.argument("player", ArgumentTypes.player())
                         .requires { it.sender.op() }

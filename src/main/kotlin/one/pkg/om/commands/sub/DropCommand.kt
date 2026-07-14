@@ -19,26 +19,30 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import one.pkg.om.commands.SubCommand
 import one.pkg.om.manager.OManager
+import one.pkg.om.utils.handleUiRedirect
 import one.pkg.om.utils.op
 import one.pkg.om.utils.sendFailed
 import one.pkg.om.utils.sendSuccess
 import one.pkg.om.utils.sendWarning
+import one.pkg.om.utils.suggestMorphTypes
+import org.bukkit.entity.Player
 import java.util.concurrent.CompletableFuture
 
 class DropCommand : SubCommand {
     override fun register(root: LiteralArgumentBuilder<CommandSourceStack>) {
         root.then(
             Commands.literal("drop")
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    if (handleUiRedirect(sender, "drop")) return@executes 1
+                    sender.sendMessage("Usage: /om drop <player> <type> <id>")
+                    1
+                }
                 .then(
                     Commands.argument("player", ArgumentTypes.player())
                         .then(
                             Commands.argument("type", StringArgumentType.word())
-                                .suggests { _, builder ->
-                                    listOf("entity", "block", "player")
-                                        .filter { it.startsWith(builder.remaining, true) }
-                                        .forEach { builder.suggest(it) }
-                                    builder.buildFuture()
-                                }
+                                .suggests { _, builder -> suggestMorphTypes(builder) }
                                 .then(
                                     Commands.argument("id", StringArgumentType.string())
                                         .suggests(this::suggestIds)
@@ -64,7 +68,7 @@ class DropCommand : SubCommand {
         val targetName = targetPlayer.name
 
         if (!isAdmin) {
-            val isOwner = if (sender is org.bukkit.entity.Player) {
+            val isOwner = if (sender is Player) {
                 sender.uniqueId == targetPlayer.uniqueId
             } else {
                 targetName.equals(sender.name, ignoreCase = true)

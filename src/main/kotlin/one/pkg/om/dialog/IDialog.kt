@@ -10,9 +10,11 @@ package one.pkg.om.dialog
 
 import io.papermc.paper.dialog.Dialog
 import io.papermc.paper.registry.data.dialog.DialogRegistryEntry
+import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput
 import io.papermc.paper.registry.event.RegistryComposeEvent
 import io.papermc.paper.registry.keys.DialogKeys
 import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
 
 @Suppress("UnstableApiUsage")
 interface IDialog {
@@ -25,4 +27,12 @@ interface IDialog {
             this.create(builder)
         }
     }
-}
+
+    companion object {
+        val typeOptions = listOf(
+            SingleOptionDialogInput.OptionEntry.create("entity", Component.text("Entity"), true),
+            SingleOptionDialogInput.OptionEntry.create("block", Component.text("Block"), false),
+            SingleOptionDialogInput.OptionEntry.create("player", Component.text("Player"), false)
+        )
+    }
+}
