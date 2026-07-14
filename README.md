@@ -13,6 +13,80 @@ An open-source, universal camouflage plugin.
 - Lightweight design
 - Disguised as a block/entity/player
 
+## Limitations
+
+- Limited compatibility with other plugins
+- Client-side renderer is not supported yet
+- No Mod version yet
+- Currently no time to create a GUI
+
+## Usage
+
+### Commands
+
+OpenMorph utilizes Brigadier for its command structure. The primary command is `/om`.
+
+#### General Commands
+
+| Command                              | Description                                                      | Permissions & Notes                                                                                                                                                                                                          |
+|--------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/om morph <type> <target> [player]` | Disguise yourself or another player.                             | Non-ops can only target themselves and must have unlocked the morph. Operators can target other players. `<type>` can be `entity`, `block`, or `player`. `<target>` is the entity type, block material, or player skin name. |
+| `/om unmorph [player]`               | Remove active disguise.                                          | Operators can target other players.                                                                                                                                                                                          |
+| `/om run <id> [player]`              | Execute an active morph skill.                                   | Currently supports Ghast skill `1` (Launches a large fireball, 2s cooldown).                                                                                                                                                 |
+| `/om read`                           | Unlock the morph for the block currently held in your main hand. | Consumes 1 block of the item.                                                                                                                                                                                                |
+| `/om drop <player> <type> <id>`      | Remove an unlocked morph from the player's collection.           | Non-ops can only drop their own morphs.                                                                                                                                                                                      |
+| `/om request send <player>`          | Send a skin request to another player.                           | Request skin for player morph.                                                                                                                                                                                               |
+| `/om request yes <player>`           | Accept a player's skin request.                                  |                                                                                                                                                                                                                              |
+| `/om request no <player>`            | Deny a player's skin request.                                    |                                                                                                                                                                                                                              |
+| `/om nametag`                        | Toggle name tag visibility.                                      | (Currently not fully implemented)                                                                                                                                                                                            |
+
+#### Admin Commands
+
+*Require `404morph.admin` permission or Operator status.*
+
+| Command                           | Description                                  | Notes                                                                                                                |
+|-----------------------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `/om append <player> <type> <id>` | Force grant/unlock a morph to a player.      | For blocks, use `hand` as `<id>` to use the block in your main hand. Use `all` to grant all entities/online players. |
+| `/om info [player]`               | View morph status and unlocked morph stats.  | Non-ops can run `/om info` to check their own stats.                                                                 |
+| `/om get`                         | Raytrace block or entity you are looking at. | Identifies if it is a morphed player or a real object/entity (range: 10 blocks).                                     |
+| `/om saveall`                     | Force save all player morph data.            |                                                                                                                      |
+| `/om lock <type> <id>`            | Globally disable/lock a specific morph.      | For blocks, `<id>` is optional and defaults to the block held in your main hand.                                     |
+| `/om unlock <type> <id>`          | Globally re-enable/unlock a locked morph.    | For blocks, `<id>` is optional and defaults to the block held in your main hand.                                     |
+
+#### Block Solidification & Permissions
+
+When disguised as a block, players will attempt to solidify into a real block after remaining motionless for 120 ticks (
+6 seconds). Solidifying triggers a `BlockPlaceEvent`.
+
+- `om.morph.block.bypass_ground_check` - Allows solidifying without standing on the ground.
+- `om.morph.block.bypass_restricted` - Allows solidifying as restricted blocks (e.g. Bedrock, Command Blocks, TNT,
+  Hopper, Spawners, etc.).
+
+### Container-based GUI
+
+TODO
+
+### SeeUI-based GUI
+
+TODO
+
+### Dialog-based GUI
+
+TODO
+
+## Configuration & Storage
+
+Everything OpenMorph needs is stored directly inside its plugin directory (`plugins/OpenMorph/`). Here is the breakdown:
+
+### Restricting Morphs (`locked_morphs.txt`)
+If you want to blacklist certain blocks, entities, or player skins (like `bedrock`, `warden`, or a specific player skin), they are saved in `locked_morphs.txt`.
+Each line uses the `type:id` format (for example, `block:bedrock`). You don't have to edit this file by hand—you can just use `/om lock <type> <id>` or `/om unlock <type> <id>` in-game and the plugin will update it automatically.
+
+### Built-in Mob Hostility Mappings
+By default, if you morph into a passive mob (like a Villager), hostiles like Zombies will still seek you out and attack you. This logic is handled by built-in hostility lists inside the plugin JAR (under `/data/hostility/`).
+For instance, `villager.txt` lists all the aggressors (`ZOMBIE`, `PILLAGER`, `VINDICATOR`, etc.) that will target a player morphed as a villager, while `enderman.txt` lists the `ENDER_DRAGON`.
+
+
 ## Potential incompatibility
 
 - Entity optimization plugin - To reduce external dependencies, OpenMorph uses a "real entity" design instead of a "
